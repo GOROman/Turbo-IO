@@ -16,5 +16,8 @@ RayNeo iO（国際版, BES2800）用 Strix OS の収集済みファームウェ�
 ## 版間で同一のペイロード（抜粋）
 - cb_fw_venus.bin / fac_test_img.bin (18eb0901…) / rives.bin (836bc019…) / pil_algo_wakeup_dll_nand.dll (d1594cb8…) は 1.0.2.12 と 1.0.4.12 で同一（fac/rives/wakeup は 1.0.5.5 でも同一）。
 
+## 差分・逆アセンブル
+- 版間差分は VERSION-DIFF.md、ケース解析は CASE.md、逆アセンブル成果物は各版の disasm/ フォルダ（DISASM.md 参照）。
+
 ## 含まれないもの
 - 整機フラッシュのダンプ、デバイス固有の校正/バインディング情報、ユーザーデータ、NAND ユーザー領域。これらは OTA パッケージには元々含まれず、実機からの吸い出し経路も確認できていない（解析メモ参照）。
