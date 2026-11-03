@@ -48,6 +48,7 @@ final class ProbeController: UIViewController, CBCentralManagerDelegate, StreamD
     var companionCommand: ((StandbyVoiceSession.Command) -> Void)?
     var companionTranscript: ((UUID,String,Bool) -> Void)?
     var companionLog: ((String) -> Void)?
+    var companionAudioLevel: ((Float) -> Void)?
     var companionBusiness: ((String, UInt8, Data) -> Void)?
     var companionBusinessLoss: (() -> Void)?
     var companionDeviceID: String? { companionReady ? core?.linkedDevices()?.first?.deviceID() : nil }
@@ -216,6 +217,7 @@ final class ProbeController: UIViewController, CBCentralManagerDelegate, StreamD
         #if COMPANION_DEVICE
         voiceProbe.onSubmittedCommand = { [weak self] in self?.companionCommand?($0) }
         voiceProbe.onArchiveTranscript = { [weak self] id, text, final in self?.companionTranscript?(id,text,final) }
+        voiceProbe.onAudioLevel = { [weak self] level in self?.companionAudioLevel?(level) }
         voiceProbe.cloudTools = { [weak self] in self?.companionTools?() ?? [] }
         voiceProbe.executeCloudTool = { [weak self] name, args, id in
             guard let execute = self?.companionExecuteTool else { return "Codex が未設定のため、実行しませんでした。" }

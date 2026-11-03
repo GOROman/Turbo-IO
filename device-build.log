@@ -1,0 +1,345 @@
+START 2026年 11月 3日 火曜日 16時00分55秒 JST
+⚙️  Generating plists...
+⚙️  Generating project...
+⚙️  Writing project...
+Created project at /Users/goroman/Turbo-IO/apps/RayNeoCompanion/RayNeoCompanion.xcodeproj
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild build -project RayNeoCompanion.xcodeproj -scheme RayNeoCompanionDevice -destination platform=iOS,id=00008140-001C41A02E06801C -derivedDataPath /Users/goroman/Turbo-IO/.derivedDataDevice DEVELOPMENT_TEAM=7JBC998RH7 -allowProvisioningUpdates
+
+Build settings from command line:
+    DEVELOPMENT_TEAM = 7JBC998RH7
+
+Resolve Package Graph
+
+
+Resolved source packages:
+  RayNeoArchive: /Users/goroman/Turbo-IO/rayneo-archive
+  ZIPFoundation: /Users/goroman/Turbo-IO/third-party/ZIPFoundation
+  RayNeoProtocol: /Users/goroman/Turbo-IO/rayneo-protocol
+  RayNeoSession: /Users/goroman/Turbo-IO/rayneo-session
+  RayNeoAudioContainer: /Users/goroman/Turbo-IO/rayneo-audio-container
+  RayNeoDisplay: /Users/goroman/Turbo-IO/rayneo-display
+
+ComputePackagePrebuildTargetDependencyGraph
+
+Prepare packages
+
+CreateBuildRequest
+
+SendProjectDescription
+
+CreateBuildOperation
+
+ComputeTargetDependencyGraph
+note: Building targets in dependency order
+note: Target dependency graph (14 targets)
+    Target 'RayNeoCompanionDevice' in project 'RayNeoCompanion'
+        ➜ Explicit dependency on target 'RayNeoSession-product' in project 'RayNeoSession'
+        ➜ Explicit dependency on target 'RayNeoArchive-product' in project 'RayNeoArchive'
+        ➜ Explicit dependency on target 'RayNeoAudioContainer-product' in project 'RayNeoAudioContainer'
+        ➜ Explicit dependency on target 'ZIPFoundation-product' in project 'ZIPFoundation'
+        ➜ Explicit dependency on target 'RayNeoProtocol-product' in project 'RayNeoProtocol'
+        ➜ Explicit dependency on target 'RayNeoDisplay-product' in project 'RayNeoDisplay'
+    Target 'RayNeoDisplay-product' in project 'RayNeoDisplay'
+        ➜ Explicit dependency on target 'RayNeoDisplay' in project 'RayNeoDisplay'
+    Target 'RayNeoDisplay' in project 'RayNeoDisplay' (no dependencies)
+    Target 'RayNeoProtocol-product' in project 'RayNeoProtocol'
+        ➜ Explicit dependency on target 'RayNeoProtocol' in project 'RayNeoProtocol'
+    Target 'RayNeoProtocol' in project 'RayNeoProtocol' (no dependencies)
+    Target 'ZIPFoundation-product' in project 'ZIPFoundation'
+        ➜ Explicit dependency on target 'ZIPFoundation' in project 'ZIPFoundation'
+        ➜ Explicit dependency on target 'ZIPFoundation_ZIPFoundation' in project 'ZIPFoundation'
+    Target 'ZIPFoundation' in project 'ZIPFoundation'
+        ➜ Explicit dependency on target 'ZIPFoundation_ZIPFoundation' in project 'ZIPFoundation'
+    Target 'ZIPFoundation_ZIPFoundation' in project 'ZIPFoundation' (no dependencies)
+    Target 'RayNeoAudioContainer-product' in project 'RayNeoAudioContainer'
+        ➜ Explicit dependency on target 'RayNeoAudioContainer' in project 'RayNeoAudioContainer'
+    Target 'RayNeoAudioContainer' in project 'RayNeoAudioContainer' (no dependencies)
+    Target 'RayNeoArchive-product' in project 'RayNeoArchive'
+        ➜ Explicit dependency on target 'RayNeoArchive' in project 'RayNeoArchive'
+    Target 'RayNeoArchive' in project 'RayNeoArchive' (no dependencies)
+    Target 'RayNeoSession-product' in project 'RayNeoSession'
+        ➜ Explicit dependency on target 'RayNeoSession' in project 'RayNeoSession'
+    Target 'RayNeoSession' in project 'RayNeoSession' (no dependencies)
+
+GatherProvisioningInputs
+
+CreateBuildDescription
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc --version
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS27.1.sdk -x c -c /dev/null
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS27.1.sdk -x c -c /dev/null
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS27.1.sdk -x objective-c -c /dev/null
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld -version_details
+
+Build description signature: eae352c3f5d21a7d7e1468c28d2e546d
+Build description path: /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/XCBuildData/eae352c3f5d21a7d7e1468c28d2e546d.xcbuilddata
+ClangStatCache /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS27.1.sdk /Users/goroman/Turbo-IO/.derivedDataDevice/SDKStatCaches.noindex/iphoneos27.1-24A94232-7568eff67e6f40c5a98ca4ef40d9005c.sdkstatcache
+    cd /Users/goroman/Turbo-IO/apps/RayNeoCompanion/RayNeoCompanion.xcodeproj
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS27.1.sdk -o /Users/goroman/Turbo-IO/.derivedDataDevice/SDKStatCaches.noindex/iphoneos27.1-24A94232-7568eff67e6f40c5a98ca4ef40d9005c.sdkstatcache
+
+ProcessInfoPlistFile /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/ZIPFoundation_ZIPFoundation.bundle/Info.plist /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/ZIPFoundation.build/Debug-iphoneos/ZIPFoundation_ZIPFoundation-b.build/empty-ZIPFoundation_ZIPFoundation.plist (in target 'ZIPFoundation_ZIPFoundation' from project 'ZIPFoundation')
+    cd /Users/goroman/Turbo-IO/third-party/ZIPFoundation
+    builtin-infoPlistUtility /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/ZIPFoundation.build/Debug-iphoneos/ZIPFoundation_ZIPFoundation-b.build/empty-ZIPFoundation_ZIPFoundation.plist -producttype com.apple.product-type.bundle -expandbuildsettings -format binary -platform iphoneos -requiredArchitecture arm64 -o /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/ZIPFoundation_ZIPFoundation.bundle/Info.plist
+
+WriteAuxiliaryFile /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoCompanion.build/Debug-iphoneos/RayNeoCompanionDevice.build/DerivedSources/Entitlements.plist (in target 'RayNeoCompanionDevice' from project 'RayNeoCompanion')
+    cd /Users/goroman/Turbo-IO/apps/RayNeoCompanion
+    write-file /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoCompanion.build/Debug-iphoneos/RayNeoCompanionDevice.build/DerivedSources/Entitlements.plist
+
+Ld /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoProtocol.o normal (in target 'RayNeoProtocol' from project 'RayNeoProtocol')
+    cd /Users/goroman/Turbo-IO/rayneo-protocol
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-ios15.0 -r -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS27.1.sdk -O0 -Xlinker -no_warn_duplicate_libraries -F/Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphoneos -F/Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos -iframework /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/Library/Frameworks -iframework /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS27.1.sdk/Developer/Library/Frameworks -filelist /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoProtocol.build/Debug-iphoneos/RayNeoProtocol-t.build/Objects-normal/arm64/RayNeoProtocol.LinkFileList -nostdlib -Xlinker -object_path_lto -Xlinker /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoProtocol.build/Debug-iphoneos/RayNeoProtocol-t.build/Objects-normal/arm64/RayNeoProtocol_lto.o -Xlinker -no_deduplicate -Xlinker -dependency_info -Xlinker /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoProtocol.build/Debug-iphoneos/RayNeoProtocol-t.build/Objects-normal/arm64/RayNeoProtocol_dependency_info.dat -fobjc-link-runtime -L/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphoneos -L/usr/lib/swift -Xlinker -add_ast_path -Xlinker /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoProtocol.build/Debug-iphoneos/RayNeoProtocol-t.build/Objects-normal/arm64/RayNeoProtocol.swiftmodule -o /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoProtocol.o
+
+Ld /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoDisplay.o normal (in target 'RayNeoDisplay' from project 'RayNeoDisplay')
+    cd /Users/goroman/Turbo-IO/rayneo-display
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-ios15.0 -r -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS27.1.sdk -O0 -Xlinker -no_warn_duplicate_libraries -F/Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphoneos -F/Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos -iframework /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/Library/Frameworks -iframework /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS27.1.sdk/Developer/Library/Frameworks -filelist /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoDisplay.build/Debug-iphoneos/RayNeoDisplay-t.build/Objects-normal/arm64/RayNeoDisplay.LinkFileList -nostdlib -Xlinker -object_path_lto -Xlinker /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoDisplay.build/Debug-iphoneos/RayNeoDisplay-t.build/Objects-normal/arm64/RayNeoDisplay_lto.o -Xlinker -no_deduplicate -Xlinker -dependency_info -Xlinker /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoDisplay.build/Debug-iphoneos/RayNeoDisplay-t.build/Objects-normal/arm64/RayNeoDisplay_dependency_info.dat -fobjc-link-runtime -L/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphoneos -L/usr/lib/swift -Xlinker -add_ast_path -Xlinker /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoDisplay.build/Debug-iphoneos/RayNeoDisplay-t.build/Objects-normal/arm64/RayNeoDisplay.swiftmodule -o /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoDisplay.o
+
+Ld /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/ZIPFoundation.o normal (in target 'ZIPFoundation' from project 'ZIPFoundation')
+    cd /Users/goroman/Turbo-IO/third-party/ZIPFoundation
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-ios15.0 -r -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS27.1.sdk -O0 -Xlinker -no_warn_duplicate_libraries -F/Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphoneos -F/Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos -iframework /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/Library/Frameworks -iframework /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS27.1.sdk/Developer/Library/Frameworks -filelist /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/ZIPFoundation.build/Debug-iphoneos/ZIPFoundation-t.build/Objects-normal/arm64/ZIPFoundation.LinkFileList -nostdlib -Xlinker -object_path_lto -Xlinker /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/ZIPFoundation.build/Debug-iphoneos/ZIPFoundation-t.build/Objects-normal/arm64/ZIPFoundation_lto.o -Xlinker -no_deduplicate -Xlinker -dependency_info -Xlinker /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/ZIPFoundation.build/Debug-iphoneos/ZIPFoundation-t.build/Objects-normal/arm64/ZIPFoundation_dependency_info.dat -fobjc-link-runtime -L/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphoneos -L/usr/lib/swift -Xlinker -add_ast_path -Xlinker /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/ZIPFoundation.build/Debug-iphoneos/ZIPFoundation-t.build/Objects-normal/arm64/ZIPFoundation.swiftmodule -o /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/ZIPFoundation.o
+
+Ld /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoArchive.o normal (in target 'RayNeoArchive' from project 'RayNeoArchive')
+    cd /Users/goroman/Turbo-IO/rayneo-archive
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-ios15.0 -r -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS27.1.sdk -O0 -Xlinker -no_warn_duplicate_libraries -F/Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphoneos -F/Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos -iframework /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/Library/Frameworks -iframework /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS27.1.sdk/Developer/Library/Frameworks -filelist /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoArchive.build/Debug-iphoneos/RayNeoArchive-t.build/Objects-normal/arm64/RayNeoArchive.LinkFileList -nostdlib -Xlinker -object_path_lto -Xlinker /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoArchive.build/Debug-iphoneos/RayNeoArchive-t.build/Objects-normal/arm64/RayNeoArchive_lto.o -Xlinker -no_deduplicate -Xlinker -dependency_info -Xlinker /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoArchive.build/Debug-iphoneos/RayNeoArchive-t.build/Objects-normal/arm64/RayNeoArchive_dependency_info.dat -fobjc-link-runtime -L/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphoneos -L/usr/lib/swift -Xlinker -add_ast_path -Xlinker /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoArchive.build/Debug-iphoneos/RayNeoArchive-t.build/Objects-normal/arm64/RayNeoArchive.swiftmodule -o /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoArchive.o
+
+Ld /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoAudioContainer.o normal (in target 'RayNeoAudioContainer' from project 'RayNeoAudioContainer')
+    cd /Users/goroman/Turbo-IO/rayneo-audio-container
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-ios15.0 -r -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS27.1.sdk -O0 -Xlinker -no_warn_duplicate_libraries -F/Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphoneos -F/Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos -iframework /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/Library/Frameworks -iframework /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS27.1.sdk/Developer/Library/Frameworks -filelist /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoAudioContainer.build/Debug-iphoneos/RayNeoAudioContainer-t.build/Objects-normal/arm64/RayNeoAudioContainer.LinkFileList -nostdlib -Xlinker -object_path_lto -Xlinker /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoAudioContainer.build/Debug-iphoneos/RayNeoAudioContainer-t.build/Objects-normal/arm64/RayNeoAudioContainer_lto.o -Xlinker -no_deduplicate -Xlinker -dependency_info -Xlinker /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoAudioContainer.build/Debug-iphoneos/RayNeoAudioContainer-t.build/Objects-normal/arm64/RayNeoAudioContainer_dependency_info.dat -fobjc-link-runtime -L/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphoneos -L/usr/lib/swift -Xlinker -add_ast_path -Xlinker /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoAudioContainer.build/Debug-iphoneos/RayNeoAudioContainer-t.build/Objects-normal/arm64/RayNeoAudioContainer.swiftmodule -o /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoAudioContainer.o
+
+Ld /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoSession.o normal (in target 'RayNeoSession' from project 'RayNeoSession')
+    cd /Users/goroman/Turbo-IO/rayneo-session
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-ios16.0 -r -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS27.1.sdk -O0 -Xlinker -no_warn_duplicate_libraries -F/Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphoneos -F/Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos -iframework /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/Library/Frameworks -iframework /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS27.1.sdk/Developer/Library/Frameworks -filelist /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoSession.build/Debug-iphoneos/RayNeoSession-t.build/Objects-normal/arm64/RayNeoSession.LinkFileList -nostdlib -Xlinker -object_path_lto -Xlinker /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoSession.build/Debug-iphoneos/RayNeoSession-t.build/Objects-normal/arm64/RayNeoSession_lto.o -Xlinker -no_deduplicate -Xlinker -dependency_info -Xlinker /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoSession.build/Debug-iphoneos/RayNeoSession-t.build/Objects-normal/arm64/RayNeoSession_dependency_info.dat -fobjc-link-runtime -L/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphoneos -L/usr/lib/swift -Xlinker -add_ast_path -Xlinker /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoSession.build/Debug-iphoneos/RayNeoSession-t.build/Objects-normal/arm64/RayNeoSession.swiftmodule -o /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoSession.o
+
+ProcessProductPackaging /Users/goroman/Library/Developer/Xcode/UserData/Provisioning\ Profiles/adda9564-da56-450f-a61f-56f3e01bb0a2.mobileprovision /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/embedded.mobileprovision (in target 'RayNeoCompanionDevice' from project 'RayNeoCompanion')
+    cd /Users/goroman/Turbo-IO/apps/RayNeoCompanion
+    builtin-productPackagingUtility /Users/goroman/Library/Developer/Xcode/UserData/Provisioning\ Profiles/adda9564-da56-450f-a61f-56f3e01bb0a2.mobileprovision -o /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/embedded.mobileprovision
+
+ProcessProductPackaging "" /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoCompanion.build/Debug-iphoneos/RayNeoCompanionDevice.build/RayNeoCompanion.app.xcent (in target 'RayNeoCompanionDevice' from project 'RayNeoCompanion')
+    cd /Users/goroman/Turbo-IO/apps/RayNeoCompanion
+    
+    Entitlements:
+    
+    {
+    "application-identifier" = "7JBC998RH7.io.turboio.companion";
+    "com.apple.developer.team-identifier" = 7JBC998RH7;
+    "get-task-allow" = 1;
+}
+    
+    builtin-productPackagingUtility -entitlements -format xml -o /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoCompanion.build/Debug-iphoneos/RayNeoCompanionDevice.build/RayNeoCompanion.app.xcent
+
+ProcessProductPackagingDER /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoCompanion.build/Debug-iphoneos/RayNeoCompanionDevice.build/RayNeoCompanion.app.xcent /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoCompanion.build/Debug-iphoneos/RayNeoCompanionDevice.build/RayNeoCompanion.app.xcent.der (in target 'RayNeoCompanionDevice' from project 'RayNeoCompanion')
+    cd /Users/goroman/Turbo-IO/apps/RayNeoCompanion
+    /usr/bin/derq query -f xml -i /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoCompanion.build/Debug-iphoneos/RayNeoCompanionDevice.build/RayNeoCompanion.app.xcent -o /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoCompanion.build/Debug-iphoneos/RayNeoCompanionDevice.build/RayNeoCompanion.app.xcent.der --raw
+
+ExtractAppIntentsMetadata (in target 'ZIPFoundation' from project 'ZIPFoundation')
+    cd /Users/goroman/Turbo-IO/third-party/ZIPFoundation
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsmetadataprocessor --toolchain-dir /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --module-name ZIPFoundation --sdk-root /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS27.1.sdk --xcode-version 27A9275 --platform-family iOS --deployment-target 15.0 --bundle-identifier zipfoundation.ZIPFoundation --output /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/ZIPFoundation.appintents --target-triple arm64-apple-ios15.0 --binary-file /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/ZIPFoundation.o --dependency-file /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/ZIPFoundation.build/Debug-iphoneos/ZIPFoundation-t.build/Objects-normal/arm64/ZIPFoundation_dependency_info.dat --stringsdata-file /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/ZIPFoundation.build/Debug-iphoneos/ZIPFoundation-t.build/Objects-normal/arm64/ExtractedAppShortcutsMetadata.stringsdata --source-file-list /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/ZIPFoundation.build/Debug-iphoneos/ZIPFoundation-t.build/Objects-normal/arm64/ZIPFoundation.SwiftFileList --metadata-file-list /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/ZIPFoundation.build/Debug-iphoneos/ZIPFoundation-t.build/ZIPFoundation.DependencyMetadataFileList --static-metadata-file-list /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/ZIPFoundation.build/Debug-iphoneos/ZIPFoundation-t.build/ZIPFoundation.DependencyStaticMetadataFileList --swift-const-vals-list /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/ZIPFoundation.build/Debug-iphoneos/ZIPFoundation-t.build/Objects-normal/arm64/ZIPFoundation.SwiftConstValuesFileList --force --compile-time-extraction --deployment-aware-processing --no-app-shortcuts-localization
+2026-11-03 16:00:58.601 appintentsmetadataprocessor[83167:23827612] Starting appintentsmetadataprocessor export
+2026-11-03 16:00:58.656 appintentsmetadataprocessor[83167:23827612] Extracted no relevant App Intents symbols, skipping writing output
+
+ExtractAppIntentsMetadata (in target 'RayNeoSession' from project 'RayNeoSession')
+    cd /Users/goroman/Turbo-IO/rayneo-session
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsmetadataprocessor --toolchain-dir /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --module-name RayNeoSession --sdk-root /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS27.1.sdk --xcode-version 27A9275 --platform-family iOS --deployment-target 16.0 --bundle-identifier rayneo-session.RayNeoSession --output /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoSession.appintents --target-triple arm64-apple-ios16.0 --binary-file /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoSession.o --dependency-file /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoSession.build/Debug-iphoneos/RayNeoSession-t.build/Objects-normal/arm64/RayNeoSession_dependency_info.dat --stringsdata-file /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoSession.build/Debug-iphoneos/RayNeoSession-t.build/Objects-normal/arm64/ExtractedAppShortcutsMetadata.stringsdata --source-file-list /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoSession.build/Debug-iphoneos/RayNeoSession-t.build/Objects-normal/arm64/RayNeoSession.SwiftFileList --metadata-file-list /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoSession.build/Debug-iphoneos/RayNeoSession-t.build/RayNeoSession.DependencyMetadataFileList --static-metadata-file-list /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoSession.build/Debug-iphoneos/RayNeoSession-t.build/RayNeoSession.DependencyStaticMetadataFileList --swift-const-vals-list /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoSession.build/Debug-iphoneos/RayNeoSession-t.build/Objects-normal/arm64/RayNeoSession.SwiftConstValuesFileList --force --compile-time-extraction --deployment-aware-processing --no-app-shortcuts-localization
+2026-11-03 16:00:58.601 appintentsmetadataprocessor[83170:23827615] Starting appintentsmetadataprocessor export
+2026-11-03 16:00:58.656 appintentsmetadataprocessor[83170:23827615] Extracted no relevant App Intents symbols, skipping writing output
+
+ExtractAppIntentsMetadata (in target 'RayNeoArchive' from project 'RayNeoArchive')
+    cd /Users/goroman/Turbo-IO/rayneo-archive
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsmetadataprocessor --toolchain-dir /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --module-name RayNeoArchive --sdk-root /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS27.1.sdk --xcode-version 27A9275 --platform-family iOS --deployment-target 15.0 --bundle-identifier rayneo-archive.RayNeoArchive --output /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoArchive.appintents --target-triple arm64-apple-ios15.0 --binary-file /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoArchive.o --dependency-file /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoArchive.build/Debug-iphoneos/RayNeoArchive-t.build/Objects-normal/arm64/RayNeoArchive_dependency_info.dat --stringsdata-file /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoArchive.build/Debug-iphoneos/RayNeoArchive-t.build/Objects-normal/arm64/ExtractedAppShortcutsMetadata.stringsdata --source-file-list /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoArchive.build/Debug-iphoneos/RayNeoArchive-t.build/Objects-normal/arm64/RayNeoArchive.SwiftFileList --metadata-file-list /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoArchive.build/Debug-iphoneos/RayNeoArchive-t.build/RayNeoArchive.DependencyMetadataFileList --static-metadata-file-list /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoArchive.build/Debug-iphoneos/RayNeoArchive-t.build/RayNeoArchive.DependencyStaticMetadataFileList --swift-const-vals-list /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoArchive.build/Debug-iphoneos/RayNeoArchive-t.build/Objects-normal/arm64/RayNeoArchive.SwiftConstValuesFileList --force --compile-time-extraction --deployment-aware-processing --no-app-shortcuts-localization
+2026-11-03 16:00:58.601 appintentsmetadataprocessor[83171:23827616] Starting appintentsmetadataprocessor export
+2026-11-03 16:00:58.656 appintentsmetadataprocessor[83171:23827616] Extracted no relevant App Intents symbols, skipping writing output
+
+ExtractAppIntentsMetadata (in target 'RayNeoAudioContainer' from project 'RayNeoAudioContainer')
+    cd /Users/goroman/Turbo-IO/rayneo-audio-container
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsmetadataprocessor --toolchain-dir /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --module-name RayNeoAudioContainer --sdk-root /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS27.1.sdk --xcode-version 27A9275 --platform-family iOS --deployment-target 15.0 --bundle-identifier rayneo-audio-container.RayNeoAudioContainer --output /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoAudioContainer.appintents --target-triple arm64-apple-ios15.0 --binary-file /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoAudioContainer.o --dependency-file /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoAudioContainer.build/Debug-iphoneos/RayNeoAudioContainer-t.build/Objects-normal/arm64/RayNeoAudioContainer_dependency_info.dat --stringsdata-file /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoAudioContainer.build/Debug-iphoneos/RayNeoAudioContainer-t.build/Objects-normal/arm64/ExtractedAppShortcutsMetadata.stringsdata --source-file-list /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoAudioContainer.build/Debug-iphoneos/RayNeoAudioContainer-t.build/Objects-normal/arm64/RayNeoAudioContainer.SwiftFileList --metadata-file-list /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoAudioContainer.build/Debug-iphoneos/RayNeoAudioContainer-t.build/RayNeoAudioContainer.DependencyMetadataFileList --static-metadata-file-list /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoAudioContainer.build/Debug-iphoneos/RayNeoAudioContainer-t.build/RayNeoAudioContainer.DependencyStaticMetadataFileList --swift-const-vals-list /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoAudioContainer.build/Debug-iphoneos/RayNeoAudioContainer-t.build/Objects-normal/arm64/RayNeoAudioContainer.SwiftConstValuesFileList --force --compile-time-extraction --deployment-aware-processing --no-app-shortcuts-localization
+2026-11-03 16:00:58.601 appintentsmetadataprocessor[83169:23827614] Starting appintentsmetadataprocessor export
+2026-11-03 16:00:58.656 appintentsmetadataprocessor[83169:23827614] Extracted no relevant App Intents symbols, skipping writing output
+
+ExtractAppIntentsMetadata (in target 'RayNeoProtocol' from project 'RayNeoProtocol')
+    cd /Users/goroman/Turbo-IO/rayneo-protocol
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsmetadataprocessor --toolchain-dir /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --module-name RayNeoProtocol --sdk-root /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS27.1.sdk --xcode-version 27A9275 --platform-family iOS --deployment-target 15.0 --bundle-identifier rayneo-protocol.RayNeoProtocol --output /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoProtocol.appintents --target-triple arm64-apple-ios15.0 --binary-file /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoProtocol.o --dependency-file /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoProtocol.build/Debug-iphoneos/RayNeoProtocol-t.build/Objects-normal/arm64/RayNeoProtocol_dependency_info.dat --stringsdata-file /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoProtocol.build/Debug-iphoneos/RayNeoProtocol-t.build/Objects-normal/arm64/ExtractedAppShortcutsMetadata.stringsdata --source-file-list /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoProtocol.build/Debug-iphoneos/RayNeoProtocol-t.build/Objects-normal/arm64/RayNeoProtocol.SwiftFileList --metadata-file-list /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoProtocol.build/Debug-iphoneos/RayNeoProtocol-t.build/RayNeoProtocol.DependencyMetadataFileList --static-metadata-file-list /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoProtocol.build/Debug-iphoneos/RayNeoProtocol-t.build/RayNeoProtocol.DependencyStaticMetadataFileList --swift-const-vals-list /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoProtocol.build/Debug-iphoneos/RayNeoProtocol-t.build/Objects-normal/arm64/RayNeoProtocol.SwiftConstValuesFileList --force --compile-time-extraction --deployment-aware-processing --no-app-shortcuts-localization
+2026-11-03 16:00:58.601 appintentsmetadataprocessor[83168:23827613] Starting appintentsmetadataprocessor export
+2026-11-03 16:00:58.656 appintentsmetadataprocessor[83168:23827613] Extracted no relevant App Intents symbols, skipping writing output
+
+ExtractAppIntentsMetadata (in target 'RayNeoDisplay' from project 'RayNeoDisplay')
+    cd /Users/goroman/Turbo-IO/rayneo-display
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsmetadataprocessor --toolchain-dir /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --module-name RayNeoDisplay --sdk-root /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS27.1.sdk --xcode-version 27A9275 --platform-family iOS --deployment-target 15.0 --bundle-identifier rayneo-display.RayNeoDisplay --output /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoDisplay.appintents --target-triple arm64-apple-ios15.0 --binary-file /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoDisplay.o --dependency-file /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoDisplay.build/Debug-iphoneos/RayNeoDisplay-t.build/Objects-normal/arm64/RayNeoDisplay_dependency_info.dat --stringsdata-file /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoDisplay.build/Debug-iphoneos/RayNeoDisplay-t.build/Objects-normal/arm64/ExtractedAppShortcutsMetadata.stringsdata --source-file-list /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoDisplay.build/Debug-iphoneos/RayNeoDisplay-t.build/Objects-normal/arm64/RayNeoDisplay.SwiftFileList --metadata-file-list /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoDisplay.build/Debug-iphoneos/RayNeoDisplay-t.build/RayNeoDisplay.DependencyMetadataFileList --static-metadata-file-list /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoDisplay.build/Debug-iphoneos/RayNeoDisplay-t.build/RayNeoDisplay.DependencyStaticMetadataFileList --swift-const-vals-list /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoDisplay.build/Debug-iphoneos/RayNeoDisplay-t.build/Objects-normal/arm64/RayNeoDisplay.SwiftConstValuesFileList --force --compile-time-extraction --deployment-aware-processing --no-app-shortcuts-localization
+2026-11-03 16:00:58.601 appintentsmetadataprocessor[83172:23827617] Starting appintentsmetadataprocessor export
+2026-11-03 16:00:58.655 appintentsmetadataprocessor[83172:23827617] Extracted no relevant App Intents symbols, skipping writing output
+
+Ld /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/__preview.dylib normal (in target 'RayNeoCompanionDevice' from project 'RayNeoCompanion')
+    cd /Users/goroman/Turbo-IO/apps/RayNeoCompanion
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-ios16.0 -dynamiclib -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS27.1.sdk -O0 -Xlinker -no_warn_duplicate_libraries -L/Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos -F/Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/PackageFrameworks -F/Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos -F../../core-probe/Frameworks -install_name @rpath/RayNeoCompanion.debug.dylib -Xlinker -dead_strip -rdynamic -Xlinker -no_deduplicate -Xlinker -dependency_info -Xlinker /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoCompanion.build/Debug-iphoneos/RayNeoCompanionDevice.build/Objects-normal/arm64/RayNeoCompanion_dependency_info.dat -Xlinker -no_adhoc_codesign -o /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/__preview.dylib
+
+Ld /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/RayNeoCompanion.debug.dylib normal (in target 'RayNeoCompanionDevice' from project 'RayNeoCompanion')
+    cd /Users/goroman/Turbo-IO/apps/RayNeoCompanion
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-ios16.0 -dynamiclib -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS27.1.sdk -O0 -Xlinker -no_warn_duplicate_libraries -L/Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphoneos -L/Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos -F/Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphoneos -F/Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/PackageFrameworks -F/Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos -F../../core-probe/Frameworks -filelist /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoCompanion.build/Debug-iphoneos/RayNeoCompanionDevice.build/Objects-normal/arm64/RayNeoCompanion.LinkFileList -install_name @rpath/RayNeoCompanion.debug.dylib -Xlinker -rpath -Xlinker /usr/lib/swift -Xlinker -rpath -Xlinker @loader_path -Xlinker -rpath -Xlinker /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/PackageFrameworks -Xlinker -rpath -Xlinker @executable_path/Frameworks -Xlinker -dead_strip -Xlinker -object_path_lto -Xlinker /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoCompanion.build/Debug-iphoneos/RayNeoCompanionDevice.build/Objects-normal/arm64/RayNeoCompanion_lto.o -rdynamic -Xlinker -no_deduplicate -Xlinker -dependency_info -Xlinker /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoCompanion.build/Debug-iphoneos/RayNeoCompanionDevice.build/Objects-normal/arm64/RayNeoCompanion_dependency_info.dat -fobjc-arc -fobjc-link-runtime -L/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphoneos -L/usr/lib/swift -Xlinker -add_ast_path -Xlinker /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoCompanion.build/Debug-iphoneos/RayNeoCompanionDevice.build/Objects-normal/arm64/RayNeoCompanion.swiftmodule /Users/goroman/Turbo-IO/apps/RayNeoCompanion/../../core-probe/Vendor/opus-ios/libopus.a -Xlinker -alias -Xlinker _main -Xlinker ___debug_main_executable_dylib_entry_point -framework RayneoNet -framework CocoaAsyncSocket -framework OpenSSL -framework RayneoLog -framework SwiftProtobuf -framework CocoaLumberjack -framework SSZipArchive -Xlinker -no_adhoc_codesign -o /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/RayNeoCompanion.debug.dylib
+
+ConstructStubExecutorLinkFileList /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoCompanion.build/Debug-iphoneos/RayNeoCompanionDevice.build/RayNeoCompanion-ExecutorLinkFileList-normal-arm64.txt (in target 'RayNeoCompanionDevice' from project 'RayNeoCompanion')
+    cd /Users/goroman/Turbo-IO/apps/RayNeoCompanion
+    construct-stub-executor-link-file-list /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/RayNeoCompanion.debug.dylib /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/libPreviewsJITStubExecutor_no_swift_entry_point.a /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/libPreviewsJITStubExecutor.a --output /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoCompanion.build/Debug-iphoneos/RayNeoCompanionDevice.build/RayNeoCompanion-ExecutorLinkFileList-normal-arm64.txt
+note: Using stub executor library with Swift entry point. (in target 'RayNeoCompanionDevice' from project 'RayNeoCompanion')
+
+Ld /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/RayNeoCompanion normal (in target 'RayNeoCompanionDevice' from project 'RayNeoCompanion')
+    cd /Users/goroman/Turbo-IO/apps/RayNeoCompanion
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-ios16.0 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS27.1.sdk -O0 -Xlinker -no_warn_duplicate_libraries -L/Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos -F/Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/PackageFrameworks -F/Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos -F../../core-probe/Frameworks -Xlinker -rpath -Xlinker @executable_path -Xlinker -rpath -Xlinker @loader_path -Xlinker -rpath -Xlinker /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/PackageFrameworks -Xlinker -rpath -Xlinker @executable_path/Frameworks -rdynamic -Xlinker -no_deduplicate -e ___debug_blank_executor_main -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __debug_dylib -Xlinker /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoCompanion.build/Debug-iphoneos/RayNeoCompanionDevice.build/RayNeoCompanion-DebugDylibPath-normal-arm64.txt -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __debug_instlnm -Xlinker /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoCompanion.build/Debug-iphoneos/RayNeoCompanionDevice.build/RayNeoCompanion-DebugDylibInstallName-normal-arm64.txt -Xlinker -filelist -Xlinker /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoCompanion.build/Debug-iphoneos/RayNeoCompanionDevice.build/RayNeoCompanion-ExecutorLinkFileList-normal-arm64.txt /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/RayNeoCompanion.debug.dylib -Xlinker -no_adhoc_codesign -o /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/RayNeoCompanion
+
+Copy /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks/CocoaLumberjack.framework /Users/goroman/Turbo-IO/core-probe/Frameworks/CocoaLumberjack.framework (in target 'RayNeoCompanionDevice' from project 'RayNeoCompanion')
+    cd /Users/goroman/Turbo-IO/apps/RayNeoCompanion
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -bitcode-strip all -bitcode-strip-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip -resolve-src-symlinks -remove-static-executable /Users/goroman/Turbo-IO/core-probe/Frameworks/CocoaLumberjack.framework /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip /Users/goroman/Turbo-IO/core-probe/Frameworks/CocoaLumberjack.framework/CocoaLumberjack -r -o /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks/CocoaLumberjack.framework/CocoaLumberjack
+Copy /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks/OpenSSL.framework /Users/goroman/Turbo-IO/core-probe/Frameworks/OpenSSL.framework (in target 'RayNeoCompanionDevice' from project 'RayNeoCompanion')
+    cd /Users/goroman/Turbo-IO/apps/RayNeoCompanion
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -bitcode-strip all -bitcode-strip-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip -resolve-src-symlinks -remove-static-executable /Users/goroman/Turbo-IO/core-probe/Frameworks/OpenSSL.framework /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip /Users/goroman/Turbo-IO/core-probe/Frameworks/OpenSSL.framework/OpenSSL -r -o /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks/OpenSSL.framework/OpenSSL
+Copy /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks/CocoaAsyncSocket.framework /Users/goroman/Turbo-IO/core-probe/Frameworks/CocoaAsyncSocket.framework (in target 'RayNeoCompanionDevice' from project 'RayNeoCompanion')
+    cd /Users/goroman/Turbo-IO/apps/RayNeoCompanion
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -bitcode-strip all -bitcode-strip-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip -resolve-src-symlinks -remove-static-executable /Users/goroman/Turbo-IO/core-probe/Frameworks/CocoaAsyncSocket.framework /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip /Users/goroman/Turbo-IO/core-probe/Frameworks/CocoaAsyncSocket.framework/CocoaAsyncSocket -r -o /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks/CocoaAsyncSocket.framework/CocoaAsyncSocket
+
+Copy /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks/SwiftProtobuf.framework /Users/goroman/Turbo-IO/core-probe/Frameworks/SwiftProtobuf.framework (in target 'RayNeoCompanionDevice' from project 'RayNeoCompanion')
+    cd /Users/goroman/Turbo-IO/apps/RayNeoCompanion
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -bitcode-strip all -bitcode-strip-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip -resolve-src-symlinks -remove-static-executable /Users/goroman/Turbo-IO/core-probe/Frameworks/SwiftProtobuf.framework /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip /Users/goroman/Turbo-IO/core-probe/Frameworks/SwiftProtobuf.framework/SwiftProtobuf -r -o /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks/SwiftProtobuf.framework/SwiftProtobuf
+Copy /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks/SSZipArchive.framework /Users/goroman/Turbo-IO/core-probe/Frameworks/SSZipArchive.framework (in target 'RayNeoCompanionDevice' from project 'RayNeoCompanion')
+    cd /Users/goroman/Turbo-IO/apps/RayNeoCompanion
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -bitcode-strip all -bitcode-strip-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip -resolve-src-symlinks -remove-static-executable /Users/goroman/Turbo-IO/core-probe/Frameworks/SSZipArchive.framework /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip /Users/goroman/Turbo-IO/core-probe/Frameworks/SSZipArchive.framework/SSZipArchive -r -o /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks/SSZipArchive.framework/SSZipArchive
+
+Copy /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks/RayneoNet.framework /Users/goroman/Turbo-IO/core-probe/Frameworks/RayneoNet.framework (in target 'RayNeoCompanionDevice' from project 'RayNeoCompanion')
+    cd /Users/goroman/Turbo-IO/apps/RayNeoCompanion
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -bitcode-strip all -bitcode-strip-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip -resolve-src-symlinks -remove-static-executable /Users/goroman/Turbo-IO/core-probe/Frameworks/RayneoNet.framework /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip /Users/goroman/Turbo-IO/core-probe/Frameworks/RayneoNet.framework/RayneoNet -r -o /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks/RayneoNet.framework/RayneoNet
+Copy /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks/RayneoLog.framework /Users/goroman/Turbo-IO/core-probe/Frameworks/RayneoLog.framework (in target 'RayNeoCompanionDevice' from project 'RayNeoCompanion')
+    cd /Users/goroman/Turbo-IO/apps/RayNeoCompanion
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -bitcode-strip all -bitcode-strip-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip -resolve-src-symlinks -remove-static-executable /Users/goroman/Turbo-IO/core-probe/Frameworks/RayneoLog.framework /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip /Users/goroman/Turbo-IO/core-probe/Frameworks/RayneoLog.framework/RayneoLog -r -o /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks/RayneoLog.framework/RayneoLog
+
+CodeSign /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks/RayneoLog.framework (in target 'RayNeoCompanionDevice' from project 'RayNeoCompanion')
+    cd /Users/goroman/Turbo-IO/apps/RayNeoCompanion
+    
+    Signing Identity:     "Apple Development: Yoshihito Kondoh (B3NC8B5M77)"
+    Provisioning Profile: "iOS Team Provisioning Profile: *"
+                          (adda9564-da56-450f-a61f-56f3e01bb0a2)
+    
+    /usr/bin/codesign --force --sign A35E2A40466F0391F4BEFF6637823549BE270609 --timestamp\=none --preserve-metadata\=identifier,entitlements,flags --generate-entitlement-der /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks/RayneoLog.framework
+/Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks/RayneoLog.framework: replacing existing signature
+
+CodeSign /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks/SSZipArchive.framework (in target 'RayNeoCompanionDevice' from project 'RayNeoCompanion')
+    cd /Users/goroman/Turbo-IO/apps/RayNeoCompanion
+    
+    Signing Identity:     "Apple Development: Yoshihito Kondoh (B3NC8B5M77)"
+    Provisioning Profile: "iOS Team Provisioning Profile: *"
+                          (adda9564-da56-450f-a61f-56f3e01bb0a2)
+    
+    /usr/bin/codesign --force --sign A35E2A40466F0391F4BEFF6637823549BE270609 --timestamp\=none --preserve-metadata\=identifier,entitlements,flags --generate-entitlement-der /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks/SSZipArchive.framework
+/Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks/SSZipArchive.framework: replacing existing signature
+
+CodeSign /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks/CocoaAsyncSocket.framework (in target 'RayNeoCompanionDevice' from project 'RayNeoCompanion')
+    cd /Users/goroman/Turbo-IO/apps/RayNeoCompanion
+    
+    Signing Identity:     "Apple Development: Yoshihito Kondoh (B3NC8B5M77)"
+    Provisioning Profile: "iOS Team Provisioning Profile: *"
+                          (adda9564-da56-450f-a61f-56f3e01bb0a2)
+    
+    /usr/bin/codesign --force --sign A35E2A40466F0391F4BEFF6637823549BE270609 --timestamp\=none --preserve-metadata\=identifier,entitlements,flags --generate-entitlement-der /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks/CocoaAsyncSocket.framework
+/Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks/CocoaAsyncSocket.framework: replacing existing signature
+
+CodeSign /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks/CocoaLumberjack.framework (in target 'RayNeoCompanionDevice' from project 'RayNeoCompanion')
+    cd /Users/goroman/Turbo-IO/apps/RayNeoCompanion
+    
+    Signing Identity:     "Apple Development: Yoshihito Kondoh (B3NC8B5M77)"
+    Provisioning Profile: "iOS Team Provisioning Profile: *"
+                          (adda9564-da56-450f-a61f-56f3e01bb0a2)
+    
+    /usr/bin/codesign --force --sign A35E2A40466F0391F4BEFF6637823549BE270609 --timestamp\=none --preserve-metadata\=identifier,entitlements,flags --generate-entitlement-der /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks/CocoaLumberjack.framework
+/Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks/CocoaLumberjack.framework: replacing existing signature
+
+CodeSign /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks/OpenSSL.framework (in target 'RayNeoCompanionDevice' from project 'RayNeoCompanion')
+    cd /Users/goroman/Turbo-IO/apps/RayNeoCompanion
+    
+    Signing Identity:     "Apple Development: Yoshihito Kondoh (B3NC8B5M77)"
+    Provisioning Profile: "iOS Team Provisioning Profile: *"
+                          (adda9564-da56-450f-a61f-56f3e01bb0a2)
+    
+    /usr/bin/codesign --force --sign A35E2A40466F0391F4BEFF6637823549BE270609 --timestamp\=none --preserve-metadata\=identifier,entitlements,flags --generate-entitlement-der /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks/OpenSSL.framework
+/Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks/OpenSSL.framework: replacing existing signature
+
+CodeSign /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks/SwiftProtobuf.framework (in target 'RayNeoCompanionDevice' from project 'RayNeoCompanion')
+    cd /Users/goroman/Turbo-IO/apps/RayNeoCompanion
+    
+    Signing Identity:     "Apple Development: Yoshihito Kondoh (B3NC8B5M77)"
+    Provisioning Profile: "iOS Team Provisioning Profile: *"
+                          (adda9564-da56-450f-a61f-56f3e01bb0a2)
+    
+    /usr/bin/codesign --force --sign A35E2A40466F0391F4BEFF6637823549BE270609 --timestamp\=none --preserve-metadata\=identifier,entitlements,flags --generate-entitlement-der /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks/SwiftProtobuf.framework
+/Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks/SwiftProtobuf.framework: replacing existing signature
+
+ProcessInfoPlistFile /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Info.plist /Users/goroman/Turbo-IO/apps/RayNeoCompanion/Generated/CompanionDevice-Info.plist (in target 'RayNeoCompanionDevice' from project 'RayNeoCompanion')
+    cd /Users/goroman/Turbo-IO/apps/RayNeoCompanion
+    builtin-infoPlistUtility /Users/goroman/Turbo-IO/apps/RayNeoCompanion/Generated/CompanionDevice-Info.plist -producttype com.apple.product-type.application -genpkginfo /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/PkgInfo -expandbuildsettings -format binary -platform iphoneos -scanforprivacyfile /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks/CocoaAsyncSocket.framework -scanforprivacyfile /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks/CocoaLumberjack.framework -scanforprivacyfile /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks/OpenSSL.framework -scanforprivacyfile /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks/RayneoLog.framework -scanforprivacyfile /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks/RayneoNet.framework -scanforprivacyfile /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks/SSZipArchive.framework -scanforprivacyfile /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks/SwiftProtobuf.framework -scanforprivacyfile /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/ZIPFoundation_ZIPFoundation.bundle -requiredArchitecture arm64 -o /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Info.plist
+
+CodeSign /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks/RayneoNet.framework (in target 'RayNeoCompanionDevice' from project 'RayNeoCompanion')
+    cd /Users/goroman/Turbo-IO/apps/RayNeoCompanion
+    
+    Signing Identity:     "Apple Development: Yoshihito Kondoh (B3NC8B5M77)"
+    Provisioning Profile: "iOS Team Provisioning Profile: *"
+                          (adda9564-da56-450f-a61f-56f3e01bb0a2)
+    
+    /usr/bin/codesign --force --sign A35E2A40466F0391F4BEFF6637823549BE270609 --timestamp\=none --preserve-metadata\=identifier,entitlements,flags --generate-entitlement-der /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks/RayneoNet.framework
+/Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks/RayneoNet.framework: replacing existing signature
+
+CopySwiftLibs /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app (in target 'RayNeoCompanionDevice' from project 'RayNeoCompanion')
+    cd /Users/goroman/Turbo-IO/apps/RayNeoCompanion
+    builtin-swiftStdLibTool --copy --verbose --sign A35E2A40466F0391F4BEFF6637823549BE270609 --scan-executable /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/RayNeoCompanion.debug.dylib --scan-folder /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks --scan-folder /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/PlugIns --scan-folder /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/SystemExtensions --scan-folder /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Extensions --scan-folder /Users/goroman/Turbo-IO/core-probe/Frameworks/RayneoNet.framework --scan-folder /Users/goroman/Turbo-IO/core-probe/Frameworks/CocoaAsyncSocket.framework --scan-folder /Users/goroman/Turbo-IO/core-probe/Frameworks/OpenSSL.framework --scan-folder /Users/goroman/Turbo-IO/core-probe/Frameworks/RayneoLog.framework --scan-folder /Users/goroman/Turbo-IO/core-probe/Frameworks/SwiftProtobuf.framework --scan-folder /Users/goroman/Turbo-IO/core-probe/Frameworks/CocoaLumberjack.framework --scan-folder /Users/goroman/Turbo-IO/core-probe/Frameworks/SSZipArchive.framework --platform iphoneos --toolchain /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --destination /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/Frameworks --strip-bitcode --strip-bitcode-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip --emit-dependency-info /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoCompanion.build/Debug-iphoneos/RayNeoCompanionDevice.build/SwiftStdLibToolInputDependencies.dep --filter-for-swift-os
+
+ExtractAppIntentsMetadata (in target 'RayNeoCompanionDevice' from project 'RayNeoCompanion')
+    cd /Users/goroman/Turbo-IO/apps/RayNeoCompanion
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsmetadataprocessor --toolchain-dir /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --module-name RayNeoCompanion --sdk-root /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS27.1.sdk --xcode-version 27A9275 --platform-family iOS --deployment-target 16.0 --bundle-identifier io.turboio.companion --output /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app --target-triple arm64-apple-ios16.0 --binary-file /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/RayNeoCompanion --dependency-file /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoCompanion.build/Debug-iphoneos/RayNeoCompanionDevice.build/Objects-normal/arm64/RayNeoCompanion_dependency_info.dat --stringsdata-file /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoCompanion.build/Debug-iphoneos/RayNeoCompanionDevice.build/Objects-normal/arm64/ExtractedAppShortcutsMetadata.stringsdata --source-file-list /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoCompanion.build/Debug-iphoneos/RayNeoCompanionDevice.build/Objects-normal/arm64/RayNeoCompanion.SwiftFileList --metadata-file-list /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoCompanion.build/Debug-iphoneos/RayNeoCompanionDevice.build/RayNeoCompanion.DependencyMetadataFileList --static-metadata-file-list /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoCompanion.build/Debug-iphoneos/RayNeoCompanionDevice.build/RayNeoCompanion.DependencyStaticMetadataFileList --swift-const-vals-list /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoCompanion.build/Debug-iphoneos/RayNeoCompanionDevice.build/Objects-normal/arm64/RayNeoCompanion.SwiftConstValuesFileList --compile-time-extraction --deployment-aware-processing --no-app-shortcuts-localization
+2026-11-03 16:00:59.286 appintentsmetadataprocessor[83200:23827802] Starting appintentsmetadataprocessor export
+2026-11-03 16:00:59.288 appintentsmetadataprocessor[83200:23827802] warning: Metadata extraction skipped, no AppIntents.framework dependency found
+
+CodeSign /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/RayNeoCompanion.debug.dylib (in target 'RayNeoCompanionDevice' from project 'RayNeoCompanion')
+    cd /Users/goroman/Turbo-IO/apps/RayNeoCompanion
+    
+    Signing Identity:     "Apple Development: Yoshihito Kondoh (B3NC8B5M77)"
+    Provisioning Profile: "iOS Team Provisioning Profile: *"
+                          (adda9564-da56-450f-a61f-56f3e01bb0a2)
+    
+    /usr/bin/codesign --force --sign A35E2A40466F0391F4BEFF6637823549BE270609 --timestamp\=none --generate-entitlement-der /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/RayNeoCompanion.debug.dylib
+
+CodeSign /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/__preview.dylib (in target 'RayNeoCompanionDevice' from project 'RayNeoCompanion')
+    cd /Users/goroman/Turbo-IO/apps/RayNeoCompanion
+    
+    Signing Identity:     "Apple Development: Yoshihito Kondoh (B3NC8B5M77)"
+    Provisioning Profile: "iOS Team Provisioning Profile: *"
+                          (adda9564-da56-450f-a61f-56f3e01bb0a2)
+    
+    /usr/bin/codesign --force --sign A35E2A40466F0391F4BEFF6637823549BE270609 --timestamp\=none --generate-entitlement-der /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app/__preview.dylib
+
+CodeSign /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app (in target 'RayNeoCompanionDevice' from project 'RayNeoCompanion')
+    cd /Users/goroman/Turbo-IO/apps/RayNeoCompanion
+    
+    Signing Identity:     "Apple Development: Yoshihito Kondoh (B3NC8B5M77)"
+    Provisioning Profile: "iOS Team Provisioning Profile: *"
+                          (adda9564-da56-450f-a61f-56f3e01bb0a2)
+    
+    /usr/bin/codesign --force --sign A35E2A40466F0391F4BEFF6637823549BE270609 --entitlements /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/RayNeoCompanion.build/Debug-iphoneos/RayNeoCompanionDevice.build/RayNeoCompanion.app.xcent --timestamp\=none --generate-entitlement-der /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app
+
+Validate /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app (in target 'RayNeoCompanionDevice' from project 'RayNeoCompanion')
+    cd /Users/goroman/Turbo-IO/apps/RayNeoCompanion
+    builtin-validationUtility /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Products/Debug-iphoneos/RayNeoCompanion.app -shallow-bundle -infoplist-subpath Info.plist
+
+PruneExplicitPrecompiledModules /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules
+
+PruneExplicitPrecompiledModules /Users/goroman/Turbo-IO/.derivedDataDevice/SDKExplicitPrecompiledModules
+
+PruneExplicitPrecompiledModules /Users/goroman/Turbo-IO/.derivedDataDevice/Build/Intermediates.noindex/ExplicitPrecompiledModules
+
+** BUILD SUCCEEDED **
+
+EXIT=0

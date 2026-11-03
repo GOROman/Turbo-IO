@@ -13,6 +13,7 @@ import Combine
     @Published private(set) var continuous = false
     @Published private(set) var cloud = false
     @Published private(set) var localASR = false
+    @Published private(set) var audioLevels: [Float] = []
     @Published private(set) var latestEvent = "デバイス通信コアはまだ読み込まれていません"
     @Published var error: String?
     private let timeline: ConversationTimeline?
@@ -82,6 +83,11 @@ import Combine
         }
         controller.companionBusinessLoss = { [weak self] in self?.onBusinessLoss?() }
         controller.companionLog = { [weak self] line in self?.latestEvent = String(line.prefix(200)) }
+        controller.companionAudioLevel = { [weak self] level in
+            guard let self else { return }
+            self.audioLevels.append(level)
+            if self.audioLevels.count > 56 { self.audioLevels.removeFirst(self.audioLevels.count - 56) }
+        }
         controller.companionTranscript = { [weak self] id, text, final in
             guard let self, !text.isEmpty else { return }
             if self.activeTurn != id { self.finishTimelineTurn(); self.activeTurn = id }
@@ -181,7 +187,7 @@ import Combine
         error = "シミュレータは実機の音声資格情報を保存しません。"; return false
         #endif
     }
-    func clearText() { transcript = ""; answer = ""; transcriptFinal = false; modelComplete = false }
+    func clearText() { transcript = ""; answer = ""; transcriptFinal = false; modelComplete = false; audioLevels = [] }
     private func finishTimelineTurn() {
         if let id = activeTurn { timeline?.record(ConversationEvent(id: id, kind: .interrupted)); activeTurn = nil }
     }

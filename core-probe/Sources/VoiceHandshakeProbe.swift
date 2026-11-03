@@ -14,6 +14,8 @@ final class VoiceHandshakeProbe {
     private let cloud = CloudVoicePipeline()
     private let local = LocalSpeechPipeline()
     private(set) var localASREnabled = false
+    /// グラスのマイク音声レベル (0.0-1.0)。波形表示用。本文や音声そのものは渡さない。
+    var onAudioLevel: ((Float) -> Void)?
     var cloudTools: (() -> [[String: Any]])? { didSet { cloud.toolDefinitions = cloudTools } }
     var executeCloudTool: ((String, String, UUID) async -> String)? { didSet { cloud.executeTool = executeCloudTool } }
     private var incrementalFixtureUntil: TimeInterval?
@@ -369,6 +371,15 @@ final class VoiceHandshakeProbe {
             standby.audioFailed(); return
         }
         vadPackets += 1; vadFrames += Int(frames); vadVoiced += mask.nonzeroBitCount
+        if standby.cloudEnabled {
+            var sum: Double = 0
+            let sampleCount = Int(frames) * 160
+            for index in 0..<sampleCount { let sample = Double(pcm[index]); sum += sample * sample }
+            let rms = sampleCount > 0 ? (sum / Double(sampleCount)).squareRoot() / 32768.0 : 0
+            onAudioLevel?(Float(min(1.0, rms * 3.0)))
+        } else {
+            onAudioLevel?(Float(mask.nonzeroBitCount) / Float(max(1, frames)))
+        }
         if vadPackets == 1 { log?("VAD初回パケットのデコードに成功 packetBytes=\(audio.count) samples=\(frames * 160) frames10ms=\(frames)") }
         if standby.cloudEnabled {
             let data = pcm.withUnsafeBytes { Data($0.prefix(Int(frames) * 160 * 2)) }

@@ -30,6 +30,15 @@ struct ConversationView: View {
             }.padding(24).frame(maxWidth: .infinity, alignment: .leading)
                 .background(Palette.ink, in: RoundedRectangle(cornerRadius: 22))
                 .accessibilityIdentifier("live-voice-content")
+            Card {
+                HStack {
+                    Label("グラスのマイク波形", systemImage: "waveform").font(.caption).foregroundStyle(Palette.mint.opacity(0.7))
+                    Spacer()
+                    Text(runtime.enabled ? "受信中" : "待機オフ").font(.caption2).foregroundStyle(Palette.muted)
+                }
+                WaveformView(levels: runtime.audioLevels).frame(height: 44)
+                Text("グラスのマイクから届いた音声のレベルです。レベルだけを表示し、音声そのものは保存されません。").font(.caption2).foregroundStyle(Palette.muted)
+            }
             if !runtime.enabled {
                 Text("マイク未有効 · 音声は送信されていません").font(.caption).foregroundStyle(Palette.muted)
             } else {
@@ -118,6 +127,23 @@ struct ConversationView: View {
     private func reflectRunningPolicy() {
         guard runtime.enabled else { return }
         provider = runtime.localASR ? 1 : (runtime.cloud ? 2 : 0); continuous = runtime.continuous
+    }
+}
+
+struct WaveformView: View {
+    let levels: [Float]
+    var body: some View {
+        GeometryReader { geometry in
+            let barWidth = geometry.size.width / 56
+            HStack(alignment: .center, spacing: 1) {
+                ForEach(0..<56, id: \.self) { index in
+                    let level = index < levels.count ? CGFloat(levels[index]) : 0
+                    RoundedRectangle(cornerRadius: 1.5)
+                        .fill(Palette.mint.opacity(level > 0.02 ? 0.9 : 0.25))
+                        .frame(width: max(barWidth - 1, 1), height: max(geometry.size.height * max(level, 0.04), 2))
+                }
+            }.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+        }
     }
 }
 
