@@ -12,6 +12,7 @@ import Combine
     @Published private(set) var hasCredentials = false
     @Published private(set) var continuous = false
     @Published private(set) var cloud = false
+    @Published private(set) var localASR = false
     @Published private(set) var latestEvent = "デバイス通信コアはまだ読み込まれていません"
     @Published var error: String?
     private let timeline: ConversationTimeline?
@@ -118,6 +119,7 @@ import Combine
         DisplayObservation.shared.connection(ready, phase:phase)
         if ["disabled", "waitingForConnection", "idle"].contains(phase) { finishTimelineTurn() }
         continuous = controller.companionContinuous; cloud = controller.companionCloud
+        localASR = controller.companionLocalASR
         let current = deviceID
         if previousDeviceID != current { previousDeviceID = current; onConnectionChange?(current) }
         onRuntimeRefresh?()
@@ -139,11 +141,14 @@ import Combine
         #endif
     }
     func start(cloud: Bool, continuous: Bool) {
+        start(cloud: cloud, continuous: continuous, localASR: false)
+    }
+    func start(cloud: Bool, continuous: Bool, localASR: Bool) {
         guard featureIsBusy?() != true else { error = "グラスの録音またはプロンプターのタスクを先に終了してから、音声待機をオンにしてください。"; return }
         #if COMPANION_DEVICE
         prepare()
-        guard controller.companionStart(cloud: cloud, continuous: continuous) else {
-            error = "認証済みのグラスが1台必要です。クラウド会話には、このアプリ用の2つのキーも必要です。"; refresh(); return
+        guard controller.companionStart(cloud: cloud, continuous: continuous, localASR: localASR) else {
+            error = localASR ? "認証済みのグラスが1台必要です。" : "認証済みのグラスが1台必要です。クラウド会話には、このアプリ用の2つのキーも必要です。"; refresh(); return
         }
         refresh()
         #endif

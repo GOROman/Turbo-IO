@@ -12,6 +12,8 @@ final class VoiceHandshakeProbe {
     var onArchiveTranscript: ((UUID,String,Bool) -> Void)?
     let standby = StandbyVoiceSession()
     private let cloud = CloudVoicePipeline()
+    private let local = LocalSpeechPipeline()
+    private(set) var localASREnabled = false
     var cloudTools: (() -> [[String: Any]])? { didSet { cloud.toolDefinitions = cloudTools } }
     var executeCloudTool: ((String, String, UUID) async -> String)? { didSet { cloud.executeTool = executeCloudTool } }
     private var incrementalFixtureUntil: TimeInterval?
@@ -53,6 +55,19 @@ final class VoiceHandshakeProbe {
         cloud.onEmptyUtterance = { [weak self] id in
             self?.standby.cloudEmptyUtterance(id:id,now:ProcessInfo.processInfo.systemUptime)
         }
+        local.log = { [weak self] in self?.log?($0) }
+        local.onArchiveTranscript = { [weak self] id, text, final in self?.onArchiveTranscript?(id,text,final) }
+        local.onEndpoint = { [weak self] id in self?.standby.cloudEndpoint(id:id,now:ProcessInfo.processInfo.systemUptime) }
+        local.onTranscript = { [weak self] id, text, final in self?.standby.cloudTranscript(text,final:final,id:id) }
+        local.onText = { [weak self] id, text, final in self?.standby.cloudText(text,final:final,id:id,now:ProcessInfo.processInfo.systemUptime) }
+        local.onError = { [weak self] id in self?.standby.cloudFailed(id:id) }
+        local.onUtteranceBegan = { [weak self] turn, session in
+            self?.standby.cloudUtteranceBegan(id:turn,session:session,now:ProcessInfo.processInfo.systemUptime)
+        }
+        local.onEmptyUtterance = { [weak self] id in
+            self?.standby.cloudEmptyUtterance(id:id,now:ProcessInfo.processInfo.systemUptime)
+        }
+        local.modelRunner = { [weak self] id, text in self?.cloud.runModel(id:id,transcript:text) }
         standby.send = { [weak self] target, command in
             guard let send = self?.send else { return false }
             do {
@@ -93,7 +108,11 @@ final class VoiceHandshakeProbe {
                     }
                 }
                 if let id = self.standby.cloudSessionID, self.standby.cloudEnabled, !sameASR {
-                    if let until = self.incrementalFixtureUntil, ProcessInfo.processInfo.systemUptime <= until {
+                    if self.localASREnabled {
+                        self.incrementalFixtureUntil = nil
+                        self.local.echoTranscriptAsAnswer = CloudVoiceKeys.get(CloudVoiceKeys.llmService) == nil
+                        self.local.start(id:id)
+                    } else if let until = self.incrementalFixtureUntil, ProcessInfo.processInfo.systemUptime <= until {
                         self.incrementalFixtureUntil = nil
                         self.runIncrementalFixture(id:id)
                     } else {
@@ -109,6 +128,7 @@ final class VoiceHandshakeProbe {
                 // Output is complete on the phone. Do not keep a background
                 // task whose expiry could close a still-rendering lens page.
                 self.cloud.cancel()
+                self.local.cancel()
                 self.endBackgroundTask()
             } else if phase == .recording || phase == .processing || phase == .displaying {
                 if self.backgroundTask == .invalid {
@@ -119,12 +139,13 @@ final class VoiceHandshakeProbe {
                 }
             } else {
                 self.cloud.cancel(clearHistory:phase == .disabled || phase == .waitingForConnection)
+                self.local.cancel()
                 self.endBackgroundTask()
             }
         }
     }
     func armIncrementalFixture() {
-        guard standby.enabled, standby.cloudEnabled, standby.phase == .idle, !standby.continuousASREnabled else {
+        guard standby.enabled, standby.cloudEnabled, standby.phase == .idle, !standby.continuousASREnabled, !localASREnabled else {
             log?("増分セグメントテストには旧クラウドモードが接続済みでウェイクアップ待機中であることが必要です；先に継続ASR実験をオフにしてください"); return
         }
         incrementalFixtureUntil = ProcessInfo.processInfo.systemUptime + 90
@@ -295,9 +316,22 @@ final class VoiceHandshakeProbe {
     func setCloudMode(_ enabled: Bool) {
         standby.cancelCurrentRound()
         cloud.cancel(clearHistory:true)
+        localASREnabled = false; local.cancel()
         standby.cloudEnabled = enabled
         standby.continuousASREnabled = false; cloud.continuousASR = false
         log?(enabled ? "クラウドモードをオンにしました：音声→ユーザーのAlibaba Cloud、テキスト→DeepSeek；文末はクラウドが判定し、ローカルの900ms切り捨ては使いません" : "クラウドモードをオフにしました：ローカルVADのランダムテキストに戻り、アップロードしません")
+    }
+    func setLocalASRMode(_ enabled: Bool) {
+        localASREnabled = enabled
+        if enabled {
+            cloud.cancel()
+            standby.cloudEnabled = true
+            standby.continuousASREnabled = false; cloud.continuousASR = false
+            log?("ローカルASRモードをオンにしました：音声は端末上の SpeechAnalyzer で文字起こしし、DeepSeek のキーがある場合のみテキストをモデルへ送ります")
+        } else {
+            local.cancel()
+            log?("ローカルASRモードをオフにしました")
+        }
     }
     func setContinuousASR(_ enabled: Bool) {
         guard !enabled || (standby.enabled && standby.cloudEnabled) else {
@@ -338,7 +372,7 @@ final class VoiceHandshakeProbe {
         if vadPackets == 1 { log?("VAD初回パケットのデコードに成功 packetBytes=\(audio.count) samples=\(frames * 160) frames10ms=\(frames)") }
         if standby.cloudEnabled {
             let data = pcm.withUnsafeBytes { Data($0.prefix(Int(frames) * 160 * 2)) }
-            cloud.appendPCM(data)
+            if localASREnabled { local.appendPCM(data) } else { cloud.appendPCM(data) }
         }
         guard !standby.continuousASREnabled else { return }
         for index in 0..<Int(frames) {

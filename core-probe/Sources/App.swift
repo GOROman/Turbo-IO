@@ -127,13 +127,19 @@ final class ProbeController: UIViewController, CBCentralManagerDelegate, StreamD
     var companionEnabled: Bool { voiceProbe.standby.enabled }
     var companionContinuous: Bool { voiceProbe.standby.continuousASREnabled }
     var companionCloud: Bool { voiceProbe.standby.cloudEnabled }
+    var companionLocalASR: Bool { voiceProbe.localASREnabled }
     func companionStart(cloud: Bool, continuous: Bool) -> Bool {
+        companionStart(cloud: cloud, continuous: continuous, localASR: false)
+    }
+    func companionStart(cloud: Bool, continuous: Bool, localASR: Bool) -> Bool {
         loadViewIfNeeded()
         guard companionReady, let device = core?.linkedDevices()?.first,
               !cloud || CloudVoiceKeys.ready else { return false }
         UserDefaults.standard.set(true, forKey: "companion.autoVoice.v1")
-        voiceProbe.setCloudMode(cloud)
+        voiceProbe.setCloudMode(cloud || localASR)
+        if localASR { voiceProbe.setLocalASRMode(true) }
         UserDefaults.standard.set(cloud, forKey: CloudVoiceKeys.enabledKey)
+        UserDefaults.standard.set(localASR, forKey: "companion.localASR.v1")
         UserDefaults.standard.set(continuous && cloud, forKey: "companion.continuousASR.v1")
         UserDefaults.standard.set(device.deviceID(), forKey: standbyPreferenceKey)
         startStandby(target: device.deviceID())
@@ -148,21 +154,25 @@ final class ProbeController: UIViewController, CBCentralManagerDelegate, StreamD
         guard CloudVoiceKeys.ready else { return }
         UserDefaults.standard.set(true, forKey: "companion.autoVoice.v1")
         UserDefaults.standard.set(true, forKey: CloudVoiceKeys.enabledKey)
+        UserDefaults.standard.set(false, forKey: "companion.localASR.v1")
         UserDefaults.standard.set(true, forKey: "companion.continuousASR.v1")
         companionRestoreAutomaticVoice()
     }
     private func companionRestoreAutomaticVoice() {
-        guard !voiceProbe.standby.enabled, CloudVoiceKeys.ready,
+        let localASRDefault = UserDefaults.standard.bool(forKey: "companion.localASR.v1")
+        guard !voiceProbe.standby.enabled, CloudVoiceKeys.ready || localASRDefault,
               UserDefaults.standard.bool(forKey: "companion.autoVoice.v1") else { return }
         loadCore()
         guard let bonded = core?.bondedDevices(), bonded.count == 1 else {
             log("自動音声は許可済み；唯一の紐づけ済みグラスを待機中。自動ペアリングやバインドの奪取はしません"); return
         }
         let target = bonded[0].deviceID()
-        voiceProbe.setCloudMode(UserDefaults.standard.bool(forKey: CloudVoiceKeys.enabledKey))
+        let cloudDefault = UserDefaults.standard.bool(forKey: CloudVoiceKeys.enabledKey)
+        voiceProbe.setCloudMode(cloudDefault || localASRDefault)
+        if localASRDefault { voiceProbe.setLocalASRMode(true) }
         UserDefaults.standard.set(target, forKey: standbyPreferenceKey)
         startStandby(target: target)
-        if voiceProbe.standby.cloudEnabled {
+        if voiceProbe.standby.cloudEnabled, !localASRDefault {
             voiceProbe.setContinuousASR(UserDefaults.standard.bool(forKey: "companion.continuousASR.v1"))
         }
         log("ユーザーのデフォルト音声待機を復元；ウェイクアップ後のみ収音し、紐づけ済みの対象へ自動再接続します")

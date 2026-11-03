@@ -54,15 +54,15 @@ targets:
     info:
       path: Generated/Companion-Info.plist
       properties:
-        NSRemindersUsageDescription: 读取你选择的系统提醒事项并复制为Turbo IO本机待办。不会修改或删除系统提醒事项。
-        NSRemindersFullAccessUsageDescription: 读取你选择的系统提醒事项并复制为Turbo IO本机待办。虽然系统授权为完全访问，Turbo IO仅执行读取。
+        NSRemindersUsageDescription: 選択したリマインダーを読み取り、Turbo IO のローカル ToDo にコピーします。システムのリマインダーを変更・削除することはありません。
+        NSRemindersFullAccessUsageDescription: 選択したリマインダーを読み取り、Turbo IO のローカル ToDo にコピーします。システム上の権限はフルアクセスですが、Turbo IO が行うのは読み取りだけです。
         CFBundleDocumentTypes:
           - CFBundleTypeName: EPUB and Text Books
             CFBundleTypeRole: Viewer
             LSHandlerRank: Alternate
             LSItemContentTypes: [org.idpf.epub-container, public.plain-text]
         LSSupportsOpeningDocumentsInPlace: true
-        NSLocalNetworkUsageDescription: 连接你指定的电脑Codex桥接服务，发送任务并获取结果。
+        NSLocalNetworkUsageDescription: あなたが指定したコンピュータのブリッジサービスに接続し、タスクを送信して結果を取得します。
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true
   RayNeoCompanionUITests:
@@ -139,12 +139,13 @@ targets:
       path: Generated/CompanionDevice-Info.plist
       properties:
         CFBundleDisplayName: Turbo IO
-        NSLocalNetworkUsageDescription: 连接你指定的电脑Codex桥接服务，发送任务并获取结果。
-        NSRemindersUsageDescription: 读取你选择的系统提醒事项并复制为Turbo IO本机待办。不会修改或删除系统提醒事项。
-        NSRemindersFullAccessUsageDescription: 读取你选择的系统提醒事项并复制为Turbo IO本机待办。虽然系统授权为完全访问，Turbo IO仅执行读取。
+        NSLocalNetworkUsageDescription: あなたが指定したコンピュータのブリッジサービスに接続し、タスクを送信して結果を取得します。
+        NSRemindersUsageDescription: 選択したリマインダーを読み取り、Turbo IO のローカル ToDo にコピーします。システムのリマインダーを変更・削除することはありません。
+        NSRemindersFullAccessUsageDescription: 選択したリマインダーを読み取り、Turbo IO のローカル ToDo にコピーします。システム上の権限はフルアクセスですが、Turbo IO が行うのは読み取りだけです。
         UILaunchScreen: {}
-        NSBluetoothAlwaysUsageDescription: 连接你自己的眼镜，接收唤醒和语音并发送回答。
-        NSBluetoothPeripheralUsageDescription: 连接你自己的 RayNeo 眼镜。
+        NSSpeechRecognitionUsageDescription: グラスの音声をこの端末上で文字起こしするために使います。音声が端末外へ送信されることはありません。
+        NSBluetoothAlwaysUsageDescription: あなたのグラスに接続し、ウェイクアップと音声を受け取り、回答を送信します。
+        NSBluetoothPeripheralUsageDescription: あなたの RayNeo グラスに接続します。
         UISupportedExternalAccessoryProtocols: [com.rayneo.venus.dev, com.rayneo.venus.pub, cn.rayneo.mercury]
         UIBackgroundModes: [bluetooth-central, external-accessory]
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]

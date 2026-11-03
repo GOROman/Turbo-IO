@@ -23,31 +23,41 @@ final class LocalSpeechPipeline {
     var echoTranscriptAsAnswer = false
 
     private(set) var id: UUID?
-    private var analyzer: SpeechAnalyzer?
-    private var transcriber: SpeechTranscriber?
-    private var inputContinuation: AsyncStream<AnalyzerInput>.Continuation?
-    private var resultsTask: Task<Void, Never>?
-    private var converter: AVAudioConverter?
-    private var targetFormat: AVAudioFormat?
+    private var engine: AnyObject?
     private var finished = false
-    private var segmentFinal = ""
-    private var lastPartial = ""
-    private var lastPartialAt = 0.0
-
-    private static let inputFormat = AVAudioFormat(commonFormat: .pcmFormatInt16, sampleRate: 16000, channels: 1, interleaved: true)!
 
     func start(id: UUID) {
         precondition(Thread.isMainThread)
         cancel()
         self.id = id
-        finished = false; segmentFinal = ""; lastPartial = ""; lastPartialAt = 0
+        finished = false
+        guard #available(iOS 26.0, *) else { fail(id, "iOS 26 以上が必要です"); return }
         Task { @MainActor [weak self] in
             guard let self, self.id == id else { return }
             let authorized = await Self.requestAuthorization()
             guard self.id == id else { return }
             guard authorized else { self.fail(id, "音声認識の許可がありません"); return }
-            do { try await self.begin(id: id) }
-            catch { if self.id == id { self.fail(id, "ローカルASRを開始できませんでした") } }
+            let engine = SpeechAnalyzerEngine()
+            engine.onPartial = { [weak self] text in
+                guard let self, self.id == id, !self.finished else { return }
+                self.onTranscript?(id, CloudVoicePipeline.lensText(text), false)
+            }
+            engine.onFinal = { [weak self] text in
+                guard let self, self.id == id, !self.finished else { return }
+                self.handleFinal(id: id, text: text)
+            }
+            engine.onFailure = { [weak self] in
+                guard let self, self.id == id, !self.finished else { return }
+                self.fail(id, "ローカルASRの結果取得に失敗")
+            }
+            self.engine = engine
+            do {
+                try await engine.start()
+                guard self.id == id else { return }
+                self.log?("ローカルASR開始 SpeechAnalyzer(ja_JP)；音声は端末外に出ません")
+            } catch {
+                if self.id == id { self.fail(id, "ローカルASRを開始できませんでした") }
+            }
         }
     }
 
@@ -59,55 +69,16 @@ final class LocalSpeechPipeline {
         }
     }
 
-    private func begin(id: UUID) async throws {
-        let locale = Locale(identifier: "ja_JP")
-        let transcriber = SpeechTranscriber(locale: locale, preset: .progressiveTranscription)
-        // 日本語アセットが未導入なら導入を試みる (失敗しても続行し、結果側で検出する)。
-        if let request = try? await AssetInventory.assetInstallationRequest(supporting: [transcriber]) {
-            try? await request.downloadAndInstall()
-        }
-        guard self.id == id else { return }
-        self.transcriber = transcriber
-        let analyzer = SpeechAnalyzer(modules: [transcriber])
-        self.analyzer = analyzer
-        let format = await SpeechAnalyzer.bestAvailableAudioFormat(compatibleWith: [transcriber])
-        targetFormat = format
-        if let format {
-            converter = AVAudioConverter(from: Self.inputFormat, to: format)
-        }
-        let (stream, continuation) = AsyncStream<AnalyzerInput>.makeStream()
-        inputContinuation = continuation
-        resultsTask = Task { @MainActor [weak self] in
-            guard let self else { return }
-            do {
-                for try await result in transcriber.results {
-                    guard self.id == id, !self.finished else { return }
-                    let text = String(result.text.characters)
-                    if result.isFinal {
-                        self.handleFinal(id: id, text: text)
-                        return
-                    } else if !text.isEmpty {
-                        let now = ProcessInfo.processInfo.systemUptime
-                        if text != self.lastPartial, now - self.lastPartialAt >= 0.5 {
-                            self.lastPartial = text; self.lastPartialAt = now
-                            self.onTranscript?(id, CloudVoicePipeline.lensText(text), false)
-                        }
-                    }
-                }
-            } catch {
-                if self.id == id, !self.finished { self.fail(id, "ローカルASRの結果取得に失敗") }
-            }
-        }
-        try await analyzer.start(inputSequence: stream)
-        log?("ローカルASR開始 SpeechAnalyzer(ja_JP)；音声は端末外に出ません")
-    }
-
     private func handleFinal(id: UUID, text: String) {
         finished = true
         let transcript = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        segmentFinal = transcript
+        stopEngine()
         if transcript.isEmpty {
-            fail(id, "音声を文字起こしできませんでした")
+            // cancel() は id を nil にするため、先に失敗を通知する。
+            log?("ローカルASRの失敗：音声を文字起こしできませんでした")
+            let failedID = id
+            cancel()
+            onError?(failedID)
             return
         }
         let visible = CloudVoicePipeline.lensText(transcript)
@@ -122,17 +93,91 @@ final class LocalSpeechPipeline {
         } else {
             modelRunner?(id, transcript)
         }
-        // ラウンドは Standby 側の状態遷移で閉じる。解析セッションはここで畳む。
-        inputContinuation?.finish(); inputContinuation = nil
-        resultsTask?.cancel(); resultsTask = nil
-        let analyzer = self.analyzer; self.analyzer = nil; self.transcriber = nil
-        Task { try? await analyzer?.finalizeAndFinishThroughEndOfInput() }
     }
 
     func appendPCM(_ data: Data) {
         precondition(Thread.isMainThread)
-        guard id != nil, !finished, !data.isEmpty, data.count % 2 == 0,
-              let continuation = inputContinuation, let converter, let targetFormat else { return }
+        guard id != nil, !finished else { return }
+        if #available(iOS 26.0, *) { (engine as? SpeechAnalyzerEngine)?.appendPCM(data) }
+    }
+
+    func cancel() {
+        precondition(Thread.isMainThread)
+        id = nil
+        finished = true
+        stopEngine()
+    }
+
+    private func stopEngine() {
+        if #available(iOS 26.0, *) { (engine as? SpeechAnalyzerEngine)?.stop() }
+        engine = nil
+    }
+
+    private func fail(_ current: UUID, _ reason: String) {
+        guard id == current else { return }
+        log?("ローカルASRの失敗：\(reason)")
+        cancel(); onError?(current)
+    }
+}
+
+/// SpeechAnalyzer 本体。iOS 26 未満では生成されない。
+@available(iOS 26.0, *)
+private final class SpeechAnalyzerEngine {
+    var onPartial: ((String) -> Void)?
+    var onFinal: ((String) -> Void)?
+    var onFailure: (() -> Void)?
+
+    private var analyzer: SpeechAnalyzer?
+    private var continuation: AsyncStream<AnalyzerInput>.Continuation?
+    private var resultsTask: Task<Void, Never>?
+    private var converter: AVAudioConverter?
+    private var targetFormat: AVAudioFormat?
+    private var lastPartial = ""
+    private var lastPartialAt = 0.0
+    private var stopped = false
+
+    private static let inputFormat = AVAudioFormat(commonFormat: .pcmFormatInt16, sampleRate: 16000, channels: 1, interleaved: true)!
+
+    func start() async throws {
+        let transcriber = SpeechTranscriber(locale: Locale(identifier: "ja_JP"), preset: .progressiveTranscription)
+        // 日本語アセットが未導入なら導入を試みる (失敗しても続行し、結果側で検出する)。
+        if let request = try? await AssetInventory.assetInstallationRequest(supporting: [transcriber]) {
+            try? await request.downloadAndInstall()
+        }
+        let analyzer = SpeechAnalyzer(modules: [transcriber])
+        self.analyzer = analyzer
+        let format = await SpeechAnalyzer.bestAvailableAudioFormat(compatibleWith: [transcriber])
+        targetFormat = format
+        if let format { converter = AVAudioConverter(from: Self.inputFormat, to: format) }
+        let (stream, continuation) = AsyncStream<AnalyzerInput>.makeStream()
+        self.continuation = continuation
+        resultsTask = Task { @MainActor [weak self] in
+            guard let self else { return }
+            do {
+                for try await result in transcriber.results {
+                    if self.stopped { return }
+                    let text = String(result.text.characters)
+                    if result.isFinal {
+                        self.onFinal?(text)
+                        return
+                    } else if !text.isEmpty {
+                        let now = ProcessInfo.processInfo.systemUptime
+                        if text != self.lastPartial, now - self.lastPartialAt >= 0.5 {
+                            self.lastPartial = text; self.lastPartialAt = now
+                            self.onPartial?(text)
+                        }
+                    }
+                }
+            } catch {
+                if !self.stopped { self.onFailure?() }
+            }
+        }
+        try await analyzer.start(inputSequence: stream)
+    }
+
+    func appendPCM(_ data: Data) {
+        guard !stopped, !data.isEmpty, data.count % 2 == 0,
+              let continuation, let converter, let targetFormat else { return }
         let frames = AVAudioFrameCount(data.count / 2)
         guard let buffer = AVAudioPCMBuffer(pcmFormat: Self.inputFormat, frameCapacity: frames) else { return }
         buffer.frameLength = frames
@@ -153,20 +198,11 @@ final class LocalSpeechPipeline {
         continuation.yield(AnalyzerInput(buffer: converted))
     }
 
-    func cancel() {
-        precondition(Thread.isMainThread)
-        id = nil
-        finished = true
-        inputContinuation?.finish(); inputContinuation = nil
+    func stop() {
+        stopped = true
+        continuation?.finish(); continuation = nil
         resultsTask?.cancel(); resultsTask = nil
-        let analyzer = self.analyzer; analyzer = nil
-        transcriber = nil; converter = nil; targetFormat = nil
+        let analyzer = self.analyzer; self.analyzer = nil
         if let analyzer { Task { try? await analyzer.finalizeAndFinishThroughEndOfInput() } }
-    }
-
-    private func fail(_ current: UUID, _ reason: String) {
-        guard id == current else { return }
-        log?("ローカルASRの失敗：\(reason)")
-        cancel(); onError?(current)
     }
 }

@@ -142,6 +142,20 @@ final class CloudVoicePipeline {
             } catch { if self.id == id && !Task.isCancelled { self.fail(id,"ASR の接続またはプロトコルに失敗") } }
         }
     }
+    /// ローカルASR (LocalSpeechPipeline) から確定文を受け取り、モデルだけを実行する。
+    /// ASR 用 WebSocket は開かない。必要なのは LLM キーと URLSession のみ。
+    func runModel(id: UUID, transcript: String) {
+        precondition(Thread.isMainThread)
+        if session == nil {
+            let config = URLSessionConfiguration.ephemeral
+            config.timeoutIntervalForRequest = 12
+            config.timeoutIntervalForResource = 35
+            config.urlCache = nil; config.httpCookieStorage = nil
+            session = URLSession(configuration: config, delegate: noRedirect, delegateQueue: nil)
+        }
+        self.id = id
+        startModel(id, transcript: transcript)
+    }
     func appendPCM(_ data: Data) {
         precondition(Thread.isMainThread)
         guard let id, !finishing, !data.isEmpty else { return }

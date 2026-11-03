@@ -7,8 +7,9 @@ struct ConversationView: View {
     @State private var showConfiguration = false
     @State private var showSimulation = false
     @State private var showDiagnostics = false
-    @State private var useCloud = true
+    @State private var provider = 1 // 0=ローカルテスト, 1=iOSローカルASR, 2=Alibaba Cloud
     @State private var continuous = true
+    private var useCloud: Bool { provider == 2 }
     @State private var confirmStart = false
     var body: some View {
         Screen(title: "音声会話", eyebrow: "クラウド文区切り · ストリーミング会話") {
@@ -54,6 +55,8 @@ struct ConversationView: View {
             }.buttonStyle(.plain).accessibilityIdentifier("conversation-timeline")
             Card {
                 Text("動作確認済みの音声方式").font(.headline).foregroundStyle(Palette.ink)
+                FeatureRow(icon: "waveform.badge.mic", title: "iOS ローカル ASR（SpeechAnalyzer）", subtitle: "端末上で日本語を文字起こし。音声は端末外に出ません", status: "新規実装")
+                Divider().overlay(Palette.line)
                 FeatureRow(icon: "waveform", title: "Alibaba Cloud ストリーミング ASR", subtitle: "クラウドVADで文を区切ります。ローカルの無音切断は重ねません", status: "プロトタイプ確認済み")
                 Divider().overlay(Palette.line)
                 FeatureRow(icon: "bolt", title: "DeepSeek V4 Flash", subtitle: "思考オフ · ストリーミング文字 · デフォルトではWeb検索しません", status: "プロトタイプ確認済み")
@@ -63,11 +66,15 @@ struct ConversationView: View {
             }
             if runtime.supportsDevice {
                 Card {
-                    Toggle("実際のクラウド会話を使う", isOn: $useCloud).disabled(runtime.enabled)
+                    Picker("音声方式", selection: $provider) {
+                        Text("iOS ローカル").tag(1)
+                        Text("Alibaba Cloud").tag(2)
+                        Text("ローカルテスト").tag(0)
+                    }.pickerStyle(.segmented).disabled(runtime.enabled)
                     Toggle("継続ASR · 割り込み許可", isOn: $continuous).disabled(runtime.enabled || !useCloud).accessibilityIdentifier("voice-continuous-draft")
-                    Text(runtime.enabled ? (runtime.cloud && runtime.continuous ? "実行中：継続ASR · 有効な新しい文で中断" : "実行中：非継続モード · 出力中の割り込みは保証しません") : "上のスイッチは次回起動時の設定で、まだ実行していません")
+                    Text(runtime.enabled ? (runtime.localASR ? "実行中：iOS ローカルASR · 音声は端末外に出ません" : (runtime.cloud && runtime.continuous ? "実行中：継続ASR · 有効な新しい文で中断" : "実行中：非継続モード · 出力中の割り込みは保証しません")) : "上のスイッチは次回起動時の設定で、まだ実行していません")
                         .font(.caption).foregroundStyle(Palette.amber).accessibilityIdentifier("voice-effective-policy")
-                    Text(useCloud ? "起動後の音声は指定したAlibaba Cloud ASRへ、認識テキストはDeepSeekへ送られます。課金される場合があります。" : "この端末のWebRTC VAD検出のみ。返答は毎回ランダムなテスト文字列で、認識もアップロードもしません。")
+                    Text(provider == 2 ? "起動後の音声は指定したAlibaba Cloud ASRへ、認識テキストはDeepSeekへ送られます。課金される場合があります。" : provider == 1 ? "音声はこの端末の SpeechAnalyzer で文字起こしされ、端末外に出ません。DeepSeek のキーがある場合はテキストだけをモデルへ送って回答を生成します。キー未設定の場合は文字起こしをそのまま表示します。" : "この端末のWebRTC VAD検出のみ。返答は毎回ランダムなテスト文字列で、認識もアップロードもしません。")
                         .font(.caption).foregroundStyle(Palette.muted)
                     Button(runtime.hasCredentials ? "音声サービスのキーを管理" : "ASRとモデルのキーを設定") { showKeys = true }
                         .disabled(runtime.enabled)
@@ -91,6 +98,7 @@ struct ConversationView: View {
         .onAppear { runtime.prepare(); reflectRunningPolicy() }
         .onChange(of: runtime.enabled) { _ in reflectRunningPolicy() }
         .onChange(of: runtime.cloud) { _ in reflectRunningPolicy() }
+        .onChange(of: runtime.localASR) { _ in reflectRunningPolicy() }
         .onChange(of: runtime.continuous) { _ in reflectRunningPolicy() }
         .sheet(isPresented: $showConfiguration) { ModelConfigurationView() }
         .sheet(isPresented: $showSimulation) { SessionSimulationView() }
@@ -100,8 +108,8 @@ struct ConversationView: View {
             NavigationStack { VoiceDiagnosticsView(runtime: runtime).toolbar { ToolbarItem(placement: .confirmationAction) { Button("完了") { showDiagnostics = false } } } }
         }
         #endif
-        .confirmationDialog(useCloud ? "開始後、能動的な起動で音声がAlibaba Cloudへ、テキストがDeepSeekへ送信されます。サービスは課金される場合があります。" : "ローカルのランダム返答テストを開始します。音声はアップロードしません。", isPresented: $confirmStart) {
-            Button("待機開始を確認") { runtime.start(cloud: useCloud, continuous: continuous) }
+        .confirmationDialog(provider == 2 ? "開始後、能動的な起動で音声がAlibaba Cloudへ、テキストがDeepSeekへ送信されます。サービスは課金される場合があります。" : provider == 1 ? "音声はこの端末上で文字起こしされ、端末外に出ません。DeepSeek のキーがある場合のみ、テキストがモデルへ送信されます。" : "ローカルのランダム返答テストを開始します。音声はアップロードしません。", isPresented: $confirmStart) {
+            Button("待機開始を確認") { runtime.start(cloud: useCloud, continuous: useCloud && continuous, localASR: provider == 1) }
         }
         .alert("音声サービス", isPresented: Binding(get: { runtime.error != nil }, set: { if !$0 { runtime.error = nil } })) {
             Button("了解", role: .cancel) {}
@@ -109,7 +117,7 @@ struct ConversationView: View {
     }
     private func reflectRunningPolicy() {
         guard runtime.enabled else { return }
-        useCloud = runtime.cloud; continuous = runtime.continuous
+        provider = runtime.localASR ? 1 : (runtime.cloud ? 2 : 0); continuous = runtime.continuous
     }
 }
 
