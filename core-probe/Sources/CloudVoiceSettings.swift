@@ -39,23 +39,23 @@ final class CloudVoiceSettingsController: UIViewController {
         super.viewDidLoad(); view.backgroundColor = .systemBackground
         let stack = UIStackView(); stack.axis = .vertical; stack.spacing = 18
         stack.translatesAutoresizingMaskIntoConstraints = false; view.addSubview(stack)
-        let title = UILabel(); title.text = "云端语音测试"; title.font = .preferredFont(forTextStyle:.title1)
+        let title = UILabel(); title.text = "クラウド音声テスト"; title.font = .preferredFont(forTextStyle:.title1)
         stack.addArrangedSubview(title)
         note.numberOfLines = 0
-        note.text = "阿里云 ASR → DeepSeek V4 Flash\n关闭思考 · 流式输出 · 云端 VAD\n唤醒后音频发往已指定阿里云空间，识别文字发往 DeepSeek。两边均可能计费。无 TTS、无工具执行。密钥仅存本机 Keychain，日志不记音频或正文。"
+        note.text = "Alibaba Cloud ASR → DeepSeek V4 Flash\n思考オフ · ストリーミング出力 · クラウド VAD\nウェイク後は音声を指定済みの Alibaba Cloud スペースへ送り、認識した文字を DeepSeek へ送ります。どちらも課金が発生する場合があります。TTS なし、ツール実行なし。キーは本機の Keychain にのみ保存し、ログには音声や本文を記録しません。"
         stack.addArrangedSubview(note)
-        host.placeholder = "你的阿里云 ASR Host（不含协议/路径）"
+        host.placeholder = "あなたの Alibaba Cloud ASR Host（プロトコル／パスなし）"
         host.text = CloudASRHostSettings.current(); host.borderStyle = .roundedRect
         host.autocapitalizationType = .none; host.autocorrectionType = .no
         stack.addArrangedSubview(host)
-        for (field, identifier, placeholder) in [(asr,"cloud-asr-key","阿里云 API Key"),(llm,"cloud-llm-key","DeepSeek API Key")] {
+        for (field, identifier, placeholder) in [(asr,"cloud-asr-key","Alibaba Cloud API Key"),(llm,"cloud-llm-key","DeepSeek API Key")] {
             field.isSecureTextEntry = true; field.accessibilityIdentifier = identifier
             field.placeholder = placeholder; field.borderStyle = .roundedRect
             field.autocapitalizationType = .none; field.autocorrectionType = .no
             field.textContentType = .password
             stack.addArrangedSubview(field)
         }
-        for (title, action) in [("保存并启用云对话",#selector(save)),("关闭云端，回到随机测试",#selector(disable)),("返回",#selector(back))] {
+        for (title, action) in [("保存してクラウド会話を有効化",#selector(save)),("クラウドを無効化し、ランダムテストに戻る",#selector(disable)),("戻る",#selector(back))] {
             let button = UIButton(type:.system); button.setTitle(title,for:.normal)
             button.heightAnchor.constraint(equalToConstant:44).isActive = true
             button.addTarget(self,action:action,for:.touchUpInside); stack.addArrangedSubview(button)
@@ -65,12 +65,12 @@ final class CloudVoiceSettingsController: UIViewController {
     }
     @objc private func save() {
         let a = asr.text ?? "", b = llm.text ?? ""
-        guard let target = CloudASRHostSettings.normalize(host.text ?? "") else { note.text = "请填写有效的阿里云 ASR 主机名。未启用云上传。"; return }
+        guard let target = CloudASRHostSettings.normalize(host.text ?? "") else { note.text = "有効な Alibaba Cloud ASR ホスト名を入力してください。クラウドアップロードは有効化されていません。"; return }
         let service = CloudASRHostSettings.service(for: target)
         let okA = a.isEmpty ? CloudVoiceKeys.get(service) != nil : CloudVoiceKeys.save(a,service:service)
         let okB = b.isEmpty ? CloudVoiceKeys.get(CloudVoiceKeys.llmService) != nil : CloudVoiceKeys.save(b,service:CloudVoiceKeys.llmService)
         asr.text = ""; llm.text = ""
-        guard okA && okB else { note.text = "密钥未完整保存，请检查输入。未启用云上传。"; return }
+        guard okA && okB else { note.text = "キーが完全に保存されませんでした。入力を確認してください。クラウドアップロードは有効化されていません。"; return }
         CloudASRHostSettings.save(target)
         UserDefaults.standard.set(true,forKey:CloudVoiceKeys.enabledKey)
         changed?(true); dismiss(animated:true)

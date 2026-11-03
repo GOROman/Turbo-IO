@@ -86,7 +86,7 @@ final class VoiceHandshakeProbe {
                 }
                 if self.standby.vadEnabled && !sameASR {
                     let rc = RNVoiceVADReset(self.nativeVAD)
-                    self.log?(self.standby.continuousASREnabled ? "持续ASR Opus解码器初始化 rc=\(rc)；只解码，不做本地VAD分类" : "VAD本地初始化 rc=\(rc) Opus输出16k/mono WebRTC模式2；PCM不落盘")
+                    self.log?(self.standby.continuousASREnabled ? "継続ASR Opusデコーダを初期化 rc=\(rc)；デコードのみで、ローカルVAD分類はしません" : "VADローカル初期化 rc=\(rc) Opus出力16k/mono WebRTCモード2；PCMはディスクに保存しません")
                     if rc != 0 {
                         self.standby.audioFailed()
                         return
@@ -102,7 +102,7 @@ final class VoiceHandshakeProbe {
                     }
                 }
             } else if self.vadPackets > 0 && !self.standby.continuousASREnabled {
-                self.log?("VAD本轮摘要 packets=\(self.vadPackets) frames10ms=\(self.vadFrames) voiced=\(self.vadVoiced)；无音频正文")
+                self.log?("VAD本ラウンドのサマリー packets=\(self.vadPackets) frames10ms=\(self.vadFrames) voiced=\(self.vadVoiced)；音声本文なし")
                 self.vadPackets = 0
             }
             if phase == .displaying, self.standby.cloudEnabled, !self.standby.continuousASREnabled {
@@ -125,26 +125,26 @@ final class VoiceHandshakeProbe {
     }
     func armIncrementalFixture() {
         guard standby.enabled, standby.cloudEnabled, standby.phase == .idle, !standby.continuousASREnabled else {
-            log?("增量分段测试需要旧云模式已连接等待唤醒；请先关闭持续ASR实验"); return
+            log?("増分セグメントテストには旧クラウドモードが接続済みでウェイクアップ待機中であることが必要です；先に継続ASR実験をオフにしてください"); return
         }
         incrementalFixtureUntil = ProcessInfo.processInfo.systemUptime + 90
-        log?("下一次90秒内唤醒：A1-A4全为wireFinal=false，第12秒独立type12；不上云、不保存音频")
+        log?("次回90秒以内のウェイクアップ：A1-A4はすべてwireFinal=false、12秒時点で独立したtype12；クラウドへ送らず、音声は保存しません")
     }
     private func runIncrementalFixture(id: UUID) {
         cloud.cancel()
         let marker = String(id.uuidString.prefix(4))
-        log?("合成增量测试开始 marker=\(marker)；只发送固定非私密文本，未启动ASR/模型请求")
+        log?("合成増分テスト開始 marker=\(marker)；固定の非プライベートテキストのみ送信し、ASR/モデルリクエストは開始していません")
         DispatchQueue.main.asyncAfter(deadline:.now()+0.25) { [weak self] in
             guard let self, self.standby.cloudRoundID == id, self.standby.phase == .recording else { return }
-            self.standby.cloudTranscript("分段测试 \(marker)",final:true,id:id)
+            self.standby.cloudTranscript("セグメントテスト \(marker)",final:true,id:id)
             self.standby.cloudEndpoint(id:id,now:ProcessInfo.processInfo.systemUptime)
         }
-        let chunks = ["A1：这是第一段，只应出现一次。", "A2：这是第二段，请观察是否接在后面。",
-                      "A3：这是第三段，前面的内容不应重播。", "A4：尾部校验 \(marker)，完整结束。"]
+        let chunks = ["A1：これは第1段落です。一度だけ表示されるはずです。", "A2：これは第2段落です。後ろに続いているか確認してください。",
+                      "A3：これは第3段落です。前の内容が繰り返し表示されてはいけません。", "A4：末尾チェック \(marker)、これで完全に終了です。"]
         for (index, text) in chunks.enumerated() {
             DispatchQueue.main.asyncAfter(deadline:.now()+1+Double(index)*2) { [weak self] in
                 guard let self, self.standby.cloudRoundID == id, self.standby.phase == .processing else { return }
-                self.log?("合成分段提交 index=\(index+1)/4 marker=\(marker)")
+                self.log?("合成セグメントを送信 index=\(index+1)/4 marker=\(marker)")
                 self.standby.cloudText(text,final:false,id:id,now:ProcessInfo.processInfo.systemUptime)
             }
         }
@@ -152,7 +152,7 @@ final class VoiceHandshakeProbe {
         // A4 at +7s, completion at +12s: correlate lens exit to either event.
         DispatchQueue.main.asyncAfter(deadline:.now()+12) { [weak self] in
             guard let self, self.standby.cloudRoundID == id, self.standby.phase == .processing else { return }
-            self.log?("合成分段独立完成 marker=\(marker)；距A4计划5秒，发送type12")
+            self.log?("合成セグメントが独立して完了 marker=\(marker)；A4予定の5秒後、type12を送信")
             self.standby.cloudComplete(id:id,now:ProcessInfo.processInfo.systemUptime)
         }
     }
@@ -166,24 +166,24 @@ final class VoiceHandshakeProbe {
     }
     func arm(deviceID: String, fixture: DisplayBoundaryFixture? = nil) {
         precondition(Thread.isMainThread)
-        guard !standby.enabled else { log?("请先关闭持续待命再做单项显示测试"); return }
-        guard nonce == nil, auditDeviceID == nil else { log?("语音测试已就绪/进行中/检查停止，不重复开启"); return }
+        guard !standby.enabled else { log?("先に継続待機をオフにしてから単項目の表示テストを行ってください"); return }
+        guard nonce == nil, auditDeviceID == nil else { log?("音声テストは準備済み/進行中/停止確認中のいずれかのため、重ねて開始しません"); return }
         let id = UUID()
         // Synthetic response, never a transcript or model answer. New value for
         // each explicitly armed run lets the wearer detect stale lens content.
-        text = fixture?.text ?? ("测试 " + id.uuidString.prefix(8))
+        text = fixture?.text ?? ("テスト " + id.uuidString.prefix(8))
         displaySeconds = fixture == nil ? 3 : 10
         if let fixture {
-            log?("显示边界 case=\(fixture.id) utf8Bytes=\(fixture.text.utf8.count) lines=\(fixture.text.split(separator:"\n", omittingEmptySubsequences:false).count) holdSeconds=10；合成固定内容，未发送")
+            log?("表示境界 case=\(fixture.id) utf8Bytes=\(fixture.text.utf8.count) lines=\(fixture.text.split(separator:"\n", omittingEmptySubsequences:false).count) holdSeconds=10；合成した固定コンテンツ、未送信")
         }
         nonce = id; self.deviceID = deviceID; recording = false; packets = 0; bytes = 0
         let timeout = DispatchWorkItem { [weak self] in
             guard self?.nonce == id else { return }
-            self?.finish(reason:"90秒内未收到主动唤醒", display:false)
+            self?.finish(reason:"90秒以内に能動的なウェイクアップを受信せず", display:false)
         }
         deadline = timeout
         DispatchQueue.main.asyncAfter(deadline:.now()+90, execute:timeout)
-        log?("一次性语音测试已就绪：等待真实type1唤醒，90秒过期；尚未请求收音")
+        log?("ワンショット音声テストの準備完了：実際のtype1ウェイクアップを待機、90秒で期限切れ；収音はまだリクエストしていません")
     }
     func receive(deviceID: String, metadata: BusinessEnvelopeMetadata, audio: Data? = nil,
                  arrival: TimeInterval = ProcessInfo.processInfo.systemUptime) {
@@ -199,31 +199,31 @@ final class VoiceHandshakeProbe {
         }
         if auditDeviceID == deviceID, [UInt32(1), 8, 11].contains(metadata.messageType ?? 0), pendingExit != nil {
             pendingExit?.cancel(); pendingExit = nil
-            log?("收到新唤醒/轮次或眼镜退出，取消旧会话的延时退出")
+            log?("新しいウェイクアップ/ラウンド、またはグラスの終了を受信。旧セッションの遅延終了をキャンセル")
         }
         if nonce == nil, auditDeviceID == deviceID, metadata.messageType == 3 {
             postStopPackets += 1
         }
         guard nonce != nil, self.deviceID == deviceID else { return }
         if metadata.messageType == 1 && !recording {
-            guard let send else { finish(reason:"无发送路径", display:false); return }
+            guard let send else { finish(reason:"送信経路なし", display:false); return }
             do { try send(deviceID, AssistantRecorderPrototype.control(start:true)) }
-            catch { finish(reason:"开始命令发送失败", display:false); return }
+            catch { finish(reason:"開始コマンドの送信に失敗", display:false); return }
             recording = true
-            log?("收到真实唤醒，已发type2 rc=1；最多8秒，等待真实type3音频")
+            log?("実際のウェイクアップを受信し、type2 rc=1を送信済み；最大8秒、実際のtype3音声を待機")
             deadline?.cancel()
             let id = nonce
             let timeout = DispatchWorkItem { [weak self] in
                 guard self?.nonce == id else { return }
-                self?.finish(reason:"8秒测试到时", display:true)
+                self?.finish(reason:"8秒テストがタイムアップ", display:true)
             }
             deadline = timeout
             DispatchQueue.main.asyncAfter(deadline:.now()+8, execute:timeout)
         } else if metadata.messageType == 3 && recording {
             packets += 1; bytes += metadata.dataBytes ?? 0
-            if packets == 1 { log?("独立测试收到首条type3，dataBytes=\(metadata.dataBytes ?? 0)；正文不保存") }
+            if packets == 1 { log?("単独テストで最初のtype3を受信、dataBytes=\(metadata.dataBytes ?? 0)；本文は保存しません") }
         } else if metadata.messageType == 8 {
-            finish(reason:"眼镜主动退出", display:false)
+            finish(reason:"グラス側から終了", display:false)
         }
     }
     func finish(reason: String, display: Bool) {
@@ -239,48 +239,48 @@ final class VoiceHandshakeProbe {
             auditDeviceID = target; postStopPackets = 0
             do {
                 try send(target, AssistantRecorderPrototype.control(start:false))
-                log?("已发type2 rc=2停止请求；仍需检查眼镜后续音频是否停止")
-            } catch { log?("停止请求未成功提交，不能认定远端已停止；请退出眼镜语音界面") }
+                log?("type2 rc=2の停止リクエストを送信済み；グラスの後続音声が止まったか確認が必要です")
+            } catch { log?("停止リクエストの送信に成功しなかったため、リモート側が停止したとは認定できません；グラスの音声画面を終了してください") }
             if display && packets > 0 && bytes > 0 {
                 do {
                     try send(target, AssistantTextPrototype.asrText(text,isFinal:true))
-                    log?("已发type5合成测试文字 utf8Bytes=\(text.utf8.count) holdSeconds=\(Int(displaySeconds))；不是识别或模型结果，显示待确认")
+                    log?("type5の合成テストテキストを送信済み utf8Bytes=\(text.utf8.count) holdSeconds=\(Int(displaySeconds))；認識結果でもモデルの結果でもなく、表示は確認待ち")
                     let exit = DispatchWorkItem { [weak self] in
                         guard let self, self.auditDeviceID == target, let send = self.send else { return }
                         self.pendingExit = nil
                         do {
                             try send(target, AssistantExitPrototype.normalExit())
-                            self.log?("显示保持期结束，已发type7 rc=1正常退出；眼镜页面自动隐藏待确认")
-                        } catch { self.log?("正常退出命令未成功提交；请手动退出眼镜语音界面") }
+                            self.log?("表示保持期間が終了し、type7 rc=1で正常終了を送信済み；グラスのページが自動で隠れるか確認待ち")
+                        } catch { self.log?("正常終了コマンドの送信に成功しませんでした；グラスの音声画面を手動で終了してください") }
                     }
                     pendingExit = exit
                     DispatchQueue.main.asyncAfter(deadline:.now()+displaySeconds, execute:exit)
-                } catch { log?("固定文字未成功提交") }
+                } catch { log?("固定テキストの送信に成功しませんでした") }
             } else if display {
-                log?("没有观察到非空type3音频，不发送随机回答，不认定语音上行通过")
+                log?("空でないtype3音声を観測しなかったため、ランダム回答は送信せず、音声アップリンクが通過したとは認定しません")
                 do { try send(target, AssistantExitPrototype.normalExit()) }
-                catch { log?("无音频测试退出未成功提交；请手动退出眼镜语音界面") }
+                catch { log?("音声なしテストの終了送信に成功しませんでした；グラスの音声画面を手動で終了してください") }
             }
             let auditSeconds = max(5, displaySeconds + 2)
             let auditID = UUID()
             auditGeneration = auditID
             DispatchQueue.main.asyncAfter(deadline:.now()+auditSeconds) { [weak self] in
                 guard let self, self.auditGeneration == auditID else { return }
-                self.log?("停止后\(Int(auditSeconds))秒观察：新增type3=\(self.postStopPackets)；仅统计回调，不声称麦克风电气状态")
+                self.log?("停止後\(Int(auditSeconds))秒の観察：新規type3=\(self.postStopPackets)；コールバックのみ集計し、マイクの電気的状態については主張しません")
                 self.auditDeviceID = nil
                 self.auditGeneration = nil
             }
         }
-        log?("一次性语音测试结束：\(reason)，type3观察数=\(packets)，data总字节=\(bytes)，音频保存=0")
+        log?("ワンショット音声テスト終了：\(reason)、type3観察数=\(packets)、data総バイト数=\(bytes)、音声保存=0")
     }
 
     func stopDisplayTest() {
         precondition(Thread.isMainThread)
-        finish(reason:"手动结束显示测试", display:false)
+        finish(reason:"表示テストを手動で終了", display:false)
         if let target = auditDeviceID, let send {
             pendingExit?.cancel(); pendingExit = nil
             do { try send(target, AssistantExitPrototype.normalExit()) }
-            catch { log?("手动退出请求失败；请用眼镜按钮退出") }
+            catch { log?("手動終了リクエストに失敗；グラスのボタンで終了してください") }
         }
     }
 
@@ -297,16 +297,16 @@ final class VoiceHandshakeProbe {
         cloud.cancel(clearHistory:true)
         standby.cloudEnabled = enabled
         standby.continuousASREnabled = false; cloud.continuousASR = false
-        log?(enabled ? "云模式已开启：音频→用户阿里云，文字→DeepSeek；云端句末，不用本地900ms截断" : "云模式关闭：回到本地VAD随机文字，不上传")
+        log?(enabled ? "クラウドモードをオンにしました：音声→ユーザーのAlibaba Cloud、テキスト→DeepSeek；文末はクラウドが判定し、ローカルの900ms切り捨ては使いません" : "クラウドモードをオフにしました：ローカルVADのランダムテキストに戻り、アップロードしません")
     }
     func setContinuousASR(_ enabled: Bool) {
         guard !enabled || (standby.enabled && standby.cloudEnabled) else {
-            log?("持续ASR实验需要已连接待命和用户云模式"); return
+            log?("継続ASR実験には、接続済みの待機状態とユーザーのクラウドモードが必要です"); return
         }
         standby.cancelCurrentRound(); cloud.cancel()
         incrementalFixtureUntil = nil
         standby.continuousASREnabled = enabled; cloud.continuousASR = enabled
-        log?(enabled ? "持续ASR并行实验已启用：下次唤醒持续音频→用户ASR，云起句打断，句末并行模型；无本地VAD，120秒保护" : "持续ASR实验已关闭，恢复已验收的轮流对话")
+        log?(enabled ? "継続ASR並行実験を有効化しました：次回のウェイクアップでは音声を継続してユーザーのASRへ、クラウドの発話開始で割り込み、文末でモデルを並行実行；ローカルVADなし、120秒ガード" : "継続ASR実験をオフにしました。検証済みのターン制対話に復帰")
     }
     private func processAudio(_ audio: Data?, arrival: TimeInterval) {
         let now = ProcessInfo.processInfo.systemUptime
@@ -331,11 +331,11 @@ final class VoiceHandshakeProbe {
             return RNVoiceVADProcess(nativeVAD, bytes.bindMemory(to:UInt8.self).baseAddress, bytes.count, &mask)
         }
         guard frames > 0, frames <= 12 else {
-            log?("VAD音频处理失败 rc=\(frames) packetBytes=\(audio.count)；不保存坏包")
+            log?("VAD音声処理に失敗 rc=\(frames) packetBytes=\(audio.count)；破損パケットは保存しません")
             standby.audioFailed(); return
         }
         vadPackets += 1; vadFrames += Int(frames); vadVoiced += mask.nonzeroBitCount
-        if vadPackets == 1 { log?("VAD首包解码成功 packetBytes=\(audio.count) samples=\(frames * 160) frames10ms=\(frames)") }
+        if vadPackets == 1 { log?("VAD初回パケットのデコードに成功 packetBytes=\(audio.count) samples=\(frames * 160) frames10ms=\(frames)") }
         if standby.cloudEnabled {
             let data = pcm.withUnsafeBytes { Data($0.prefix(Int(frames) * 160 * 2)) }
             cloud.appendPCM(data)

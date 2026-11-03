@@ -84,7 +84,7 @@ final class ProbeController: UIViewController, CBCentralManagerDelegate, StreamD
         loadViewIfNeeded()
         deviceConnectionPolicy.resetBudget()
         startDeviceConnectionMaintenance()
-        if companionReady { log("已绑定眼镜已认证连接，无需重连") }
+        if companionReady { log("紐づけ済みのグラスは認証接続済みです。再接続は不要です") }
     }
     private func startDeviceConnectionMaintenance() {
         if core == nil { loadCore() }
@@ -93,7 +93,7 @@ final class ProbeController: UIViewController, CBCentralManagerDelegate, StreamD
             let timer = Timer(timeInterval: 2, repeats: true) { [weak self] _ in self?.deviceConnectionTick() }
             deviceConnectionTimer = timer
             RunLoop.main.add(timer, forMode: .common)
-            log("设备连接维护已开启：独立于语音，仅重连本 App 唯一已有绑定")
+            log("デバイス接続の維持を開始しました：音声とは独立に、本 App の唯一の既存バインドにのみ再接続します")
         }
         deviceConnectionTick()
     }
@@ -113,10 +113,10 @@ final class ProbeController: UIViewController, CBCentralManagerDelegate, StreamD
             transportBusy: busy), let candidate, candidate.deviceID() == target else { return }
         do {
             try core.connectBLE(candidate)
-            log("独立设备重连 attempt=\(deviceConnectionPolicy.attempts)/8；不启动语音/录音，等待认证")
-        } catch { log("独立设备重连提交失败；保留绑定并退避") }
+            log("独立デバイス再接続 attempt=\(deviceConnectionPolicy.attempts)/8；音声/録音を開始せず、認証を待機中")
+        } catch { log("独立デバイス再接続の送信に失敗；バインドを保持してバックオフします") }
         if deviceConnectionPolicy.attempts == 8 {
-            log("本轮设备重连预算用尽；回到前台、蓝牙恢复或手动重连可重试，不自动重新配对")
+            log("今回のデバイス再接続の試行枠を使い切りました；フォアグラウンド復帰、Bluetooth の復旧、または手動再接続で再試行できます。自動で再ペアリングはしません")
         }
     }
     var companionReady: Bool {
@@ -156,7 +156,7 @@ final class ProbeController: UIViewController, CBCentralManagerDelegate, StreamD
               UserDefaults.standard.bool(forKey: "companion.autoVoice.v1") else { return }
         loadCore()
         guard let bonded = core?.bondedDevices(), bonded.count == 1 else {
-            log("自动语音已允许；等待唯一已绑定眼镜，不自动配对或抢绑"); return
+            log("自動音声は許可済み；唯一の紐づけ済みグラスを待機中。自動ペアリングやバインドの奪取はしません"); return
         }
         let target = bonded[0].deviceID()
         voiceProbe.setCloudMode(UserDefaults.standard.bool(forKey: CloudVoiceKeys.enabledKey))
@@ -165,7 +165,7 @@ final class ProbeController: UIViewController, CBCentralManagerDelegate, StreamD
         if voiceProbe.standby.cloudEnabled {
             voiceProbe.setContinuousASR(UserDefaults.standard.bool(forKey: "companion.continuousASR.v1"))
         }
-        log("恢复用户默认语音待命；仅唤醒后采音，已绑定目标自动重连")
+        log("ユーザーのデフォルト音声待機を復元；ウェイクアップ後のみ収音し、紐づけ済みの対象へ自動再接続します")
     }
     func companionEndRound() { voiceProbe.standby.cancelCurrentRound() }
     #endif
@@ -181,7 +181,7 @@ final class ProbeController: UIViewController, CBCentralManagerDelegate, StreamD
         title.text = "RayNeo Core Probe"
         title.font = .preferredFont(forTextStyle: .title1)
         stack.addArrangedSubview(title)
-        for (title, action) in [("1 · 加载核心／刷新状态", #selector(loadCore)), ("2 · 只读发现 BLE", #selector(scan)), ("3 · 检查 MFi 会话", #selector(accessories)), ("4 · SDK 发现", #selector(sdkDiscovery)), ("5 · SDK BLE 连接验证", #selector(connectSDK)), ("6 · 解除绑定（清除眼镜数据）", #selector(confirmUnbind)), ("7 · 显示边界测试／结束", #selector(showDisplayBoundaryTests)), ("8 · 开启语音唤醒", #selector(confirmVoiceWakeup)), ("9 · 持续待命：关闭", #selector(toggleStandby)), ("10 · 云端对话／密钥设置",#selector(showCloudSettings))] {
+        for (title, action) in [("1 · コアを読み込む／状態を更新", #selector(loadCore)), ("2 · BLE を読み取り専用で検出", #selector(scan)), ("3 · MFi セッションを確認", #selector(accessories)), ("4 · SDK 検出", #selector(sdkDiscovery)), ("5 · SDK BLE 接続を検証", #selector(connectSDK)), ("6 · 紐づけ解除（グラスのデータを消去）", #selector(confirmUnbind)), ("7 · 表示境界テスト／終了", #selector(showDisplayBoundaryTests)), ("8 · 音声ウェイクアップを有効化", #selector(confirmVoiceWakeup)), ("9 · 継続待機：オフ", #selector(toggleStandby)), ("10 · クラウド対話／キー設定",#selector(showCloudSettings))] {
             let button = UIButton(type: .system)
             button.setTitle(title, for: .normal)
             button.addTarget(self, action: action, for: .touchUpInside)
@@ -199,8 +199,8 @@ final class ProbeController: UIViewController, CBCentralManagerDelegate, StreamD
             stack.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             stack.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -12)
         ])
-        log("独立 Bundle / 独立沙盒\n无 Hook、无 SSH、无越狱调用\nBLE 状态 9 才是 authSuccess；普通连接不算认证成功。")
-        log("旧 getBTState 入口已确认无实际发包，不作为业务接口展示。")
+        log("独立 Bundle / 独立サンドボックス\nHook なし、SSH なし、脱獄呼び出しなし\nBLE 状態 9 のみが authSuccess；通常の接続は認証成功とはみなしません。")
+        log("旧 getBTState 入口は実際にパケットを送信しないことを確認済みのため、業務インターフェースとしては表示しません。")
         RNProbeSetLogSink { [weak self] line in self?.log(line) }
         voiceProbe.log = { [weak self] in self?.log($0) }
         #if COMPANION_DEVICE
@@ -208,7 +208,7 @@ final class ProbeController: UIViewController, CBCentralManagerDelegate, StreamD
         voiceProbe.onArchiveTranscript = { [weak self] id, text, final in self?.companionTranscript?(id,text,final) }
         voiceProbe.cloudTools = { [weak self] in self?.companionTools?() ?? [] }
         voiceProbe.executeCloudTool = { [weak self] name, args, id in
-            guard let execute = self?.companionExecuteTool else { return "Codex未配置，未执行。" }
+            guard let execute = self?.companionExecuteTool else { return "Codex が未設定のため、実行しませんでした。" }
             return await execute(name, args, id)
         }
         #endif
@@ -253,15 +253,15 @@ final class ProbeController: UIViewController, CBCentralManagerDelegate, StreamD
         if voiceProbe.standby.enabled { disableStandby(); return }
         guard let linked = core?.linkedDevices(), linked.count == 1, let device = linked.first,
               device.isConnected(), device.bleStateByte() == 9 else {
-            log("持续待命开启需要唯一已认证设备，请先连接"); return
+            log("継続待機を有効化するには唯一の認証済みデバイスが必要です。先に接続してください"); return
         }
         let target = device.deviceID()
         let message = voiceProbe.standby.cloudEnabled
-            ? "当前是云对话：唤醒后音频发往已指定阿里云空间，识别文字发给DeepSeek Flash（关闭思考/流式）。云端判断句末；本地5秒无语音/20秒收音/30秒处理保护。无TTS、无工具执行。日志不记正文，服务可能计费。重开App恢复开关，按钮9关闭。"
-            : "每次真实唤醒后，本机解码并检测语音；连续约0.9秒无语音即回复随机文字，显示10秒后待命。5秒无语音退出，最长收音8秒。不是识别或模型回答，不保存/上传音频。允许后台处理但系统可能挂起。仅对已绑定眼镜有限重连，不自动配对或重置。重开App恢复开关，按钮9关闭。"
-        let alert = UIAlertController(title:"开启持续待命？", message:message, preferredStyle:.alert)
-        alert.addAction(UIAlertAction(title:"取消", style:.cancel))
-        alert.addAction(UIAlertAction(title:"开启持续待命", style:.default) { [weak self] _ in
+            ? "現在はクラウド対話です：ウェイクアップ後の音声は指定済みの Alibaba Cloud スペースへ送信され、認識テキストは DeepSeek Flash へ送られます（思考オフ/ストリーミング）。文末はクラウド側で判定；ローカル側は無音5秒/収音20秒/処理30秒の保護があります。TTS なし、ツール実行なし。ログに本文は記録しません。サービスは課金される場合があります。App を再起動するとスイッチが復元します。ボタン9でオフにします。"
+            : "実際のウェイクアップのたびに、本機でデコードと音声検出を行います；約0.9秒間無音が続くとランダムなテキストで返信し、10秒間表示した後に待機します。5秒間無音で終了し、収音は最長8秒です。認識やモデルによる回答ではありません。音声は保存/アップロードしません。バックグラウンド処理は許可しますが、システムにより中断される場合があります。紐づけ済みのグラスへの限定的な再接続のみを行い、自動ペアリングやリセットはしません。App を再起動するとスイッチが復元します。ボタン9でオフにします。"
+        let alert = UIAlertController(title:"継続待機を有効化しますか？", message:message, preferredStyle:.alert)
+        alert.addAction(UIAlertAction(title:"キャンセル", style:.cancel))
+        alert.addAction(UIAlertAction(title:"継続待機を有効化", style:.default) { [weak self] _ in
             guard let self, let linked = self.core?.linkedDevices(), linked.count == 1,
                   let current = linked.first, current.deviceID() == target,
                   current.isConnected(), current.bleStateByte() == 9 else { return }
@@ -288,9 +288,9 @@ final class ProbeController: UIViewController, CBCentralManagerDelegate, StreamD
         loadCore()
         guard let matches = core?.bondedDevices()?.filter({ $0.deviceID() == target }), matches.count == 1 else {
             UserDefaults.standard.removeObject(forKey:standbyPreferenceKey)
-            log("旧持续服务目标不再绑定，未恢复、未自动配对"); return
+            log("旧継続サービスの対象は既に紐づけられていないため、復元せず、自動ペアリングもしません"); return
         }
-        log("按已保存的用户开关恢复持续服务；不代表系统能自动拉起App")
+        log("保存済みのユーザースイッチに基づき継続サービスを復元；システムが App を自動起動できることを意味しません")
         startStandby(target:target)
         #if COMPANION_DEVICE
         if voiceProbe.standby.cloudEnabled, UserDefaults.standard.bool(forKey: "companion.continuousASR.v1") {
@@ -315,11 +315,11 @@ final class ProbeController: UIViewController, CBCentralManagerDelegate, StreamD
         voiceProbe.standby.disable()
         standbyTimer?.invalidate(); standbyTimer = nil
         standbyWasReady = false
-        standbyButton?.setTitle("9 · 持续待命：关闭", for:.normal)
+        standbyButton?.setTitle("9 · 継続待機：オフ", for:.normal)
         #if COMPANION_DEVICE
-        log("语音待命已关闭，不再自动回应；设备独立重连仍保留，未改眼镜唤醒开关/绑定")
+        log("音声待機はオフになりました。自動応答はしません；デバイスの独立再接続は維持し、グラスのウェイクアップスイッチ/バインドは変更していません")
         #else
-        log("持续服务已关闭，不再自动回应或重连；未改眼镜唤醒开关/绑定")
+        log("継続サービスはオフになりました。自動応答や再接続はしません；グラスのウェイクアップスイッチ/バインドは変更していません")
         #endif
     }
 
@@ -331,7 +331,7 @@ final class ProbeController: UIViewController, CBCentralManagerDelegate, StreamD
             && linked.first?.isConnected() == true && linked.first?.bleStateByte() == 9
         // Retain no credential or stale RNDevice handle. Resolve each time.
         guard let bonded = core.bondedDevices()?.filter({ $0.deviceID() == target }), bonded.count == 1 else {
-            log("持续服务目标已不在绑定列表，安全关闭；不重新绑定")
+            log("継続サービスの対象がバインド一覧にないため、安全にオフにしました；再バインドはしません")
             disableStandby(); return
         }
         voiceProbe.standby.connection(ready)
@@ -344,11 +344,11 @@ final class ProbeController: UIViewController, CBCentralManagerDelegate, StreamD
                     try core.sendMessage(MessageFactory.make(payload:payload, deviceID:target,
                         business:.launcher, messageID:UUID().uuidString))
                     standbyWasReady = true
-                    log("持续服务连接就绪，提交唤醒初始化；眼镜true回传另行核对")
-                } catch { log("持续服务初始化提交失败，5秒后复查") }
+                    log("継続サービスの接続準備が完了し、ウェイクアップ初期化を送信しました；グラスからの true 応答は別途確認します")
+                } catch { log("継続サービスの初期化送信に失敗。5秒後に再確認します") }
             }
         } else {
-            if standbyWasReady { log("持续服务失去唯一认证连接；暂停本轮，保留重连意图") }
+            if standbyWasReady { log("継続サービスが唯一の認証済み接続を失いました；今回のラウンドを一時停止し、再接続の意図は保持します") }
             standbyWasReady = false
             #if !COMPANION_DEVICE
             // Existing bond only; never steal another active target or race an
@@ -359,15 +359,15 @@ final class ProbeController: UIViewController, CBCentralManagerDelegate, StreamD
             if reconnectPolicy.shouldAttempt(now:now, eligible:eligible) {
                 do {
                     try core.connectBLE(candidate)
-                    log("持续服务已绑定目标重连 attempt=\(reconnectPolicy.attempts)/8；非认证成功")
-                } catch { log("持续服务重连提交失败；有界退避，不重置设备") }
-                if reconnectPolicy.attempts == 8 { log("本次重连预算已用尽；若SDK仍未恢复，请关闭再开启持续服务") }
+                    log("継続サービス：紐づけ済みの対象へ再接続 attempt=\(reconnectPolicy.attempts)/8；認証成功ではありません")
+                } catch { log("継続サービスの再接続送信に失敗；上限付きでバックオフし、デバイスはリセットしません") }
+                if reconnectPolicy.attempts == 8 { log("今回の再接続の試行枠を使い切りました；SDK がまだ復旧していない場合は、継続サービスをオフにしてから再度オンにしてください") }
             }
             #endif
         }
         voiceProbe.standby.tick(now:now)
-        let labels: [StandbyVoiceSession.Phase:String] = [.disabled:"关闭", .waitingForConnection:"等待连接", .idle:"等待唤醒", .recording:"收音中", .processing:"云端回答中", .displaying:"显示中"]
-        standbyButton?.setTitle("9 · 持续待命：\(labels[voiceProbe.standby.phase] ?? "未知")", for:.normal)
+        let labels: [StandbyVoiceSession.Phase:String] = [.disabled:"オフ", .waitingForConnection:"接続待機中", .idle:"ウェイクアップ待機中", .recording:"収音中", .processing:"クラウド回答中", .displaying:"表示中"]
+        standbyButton?.setTitle("9 · 継続待機：\(labels[voiceProbe.standby.phase] ?? "不明")", for:.normal)
     }
 
     private func log(_ text: String) {
@@ -391,7 +391,7 @@ final class ProbeController: UIViewController, CBCentralManagerDelegate, StreamD
     }
 
     @objc private func loadCore() {
-        guard RNProbeMessageImageMatches() else { log("SDK 版本不匹配，拒绝加载"); return }
+        guard RNProbeMessageImageMatches() else { log("SDK のバージョンが一致しないため、読み込みを拒否しました"); return }
         log("SDK version: \(coreVersion() ?? "nil")")
         core = coreShared()
         if messageReceiver == nil {
@@ -417,29 +417,29 @@ final class ProbeController: UIViewController, CBCentralManagerDelegate, StreamD
             }
             messageReceiver = receiver
             core?.addMessageDelegate(receiver)
-            log("本 App 原生消息回调已注册（只记类型/长度）")
+            log("本 App のネイティブメッセージコールバックを登録しました（種別/長さのみ記録）")
         }
         if modelCatalog == nil { modelCatalog = sdkModelCatalog() }
-        log("SDK 内置型号目录可用=\(modelCatalog != nil)")
-        log("独立 SDK instance 已创建")
+        log("SDK 内蔵の機種カタログ利用可能=\(modelCatalog != nil)")
+        log("独立 SDK instance を作成しました")
         let bonded = core?.bondedDevices() ?? []
         let linked = core?.linkedDevices() ?? []
-        log("本 App 保存的设备: \(bonded.count)；SDK 已连设备: \(linked.count)")
-        for device in linked { logDeviceState(device, prefix: "当前连接") }
+        log("本 App に保存されたデバイス: \(bonded.count)；SDK 接続済みデバイス: \(linked.count)")
+        for device in linked { logDeviceState(device, prefix: "現在の接続") }
     }
 
     @objc private func confirmVoiceProbe() {
         guard let core, let linked = core.linkedDevices(), linked.count == 1,
               let device = linked.first, device.isConnected(), device.bleStateByte() == 9 else {
-            log("没有唯一已认证连接，未就绪语音测试"); return
+            log("唯一の認証済み接続がないため、音声テストの準備ができていません"); return
         }
         let deviceID = device.deviceID()
-        let alert = UIAlertController(title:"准备一次8秒语音测试？", message:"仅在你主动唤醒后请求音频；收到非空音频才在8秒后显示本轮随机测试串，内容与所说的话无关，再过3秒请求退出页面。不是语音识别或模型回答。只记类型/长度，不保存、不上传；90秒不唤醒自动取消。", preferredStyle:.alert)
-        alert.addAction(UIAlertAction(title:"取消", style:.cancel))
-        alert.addAction(UIAlertAction(title:"准备测试", style:.default) { [weak self] _ in
+        let alert = UIAlertController(title:"8秒間の音声テストを準備しますか？", message:"能動的にウェイクアップした後にのみ音声を要求します；空でない音声を受信した場合に限り、8秒後に今回のランダムなテスト文字列を表示します（内容は話したこととは無関係です）。さらに3秒後にページの終了を要求します。音声認識やモデルによる回答ではありません。種別/長さのみを記録し、保存・アップロードはしません；90秒間ウェイクアップがなければ自動的にキャンセルします。", preferredStyle:.alert)
+        alert.addAction(UIAlertAction(title:"キャンセル", style:.cancel))
+        alert.addAction(UIAlertAction(title:"テストを準備", style:.default) { [weak self] _ in
             guard let current = core.linkedDevices()?.first(where: { $0.deviceID() == deviceID }),
                   current.isConnected(), current.bleStateByte() == 9 else {
-                self?.log("连接已变化，取消语音测试"); return
+                self?.log("接続が変化したため、音声テストをキャンセルしました"); return
             }
             self?.voiceProbe.arm(deviceID:deviceID)
         })
@@ -448,25 +448,25 @@ final class ProbeController: UIViewController, CBCentralManagerDelegate, StreamD
 
     @objc private func showDisplayBoundaryTests() {
         if voiceProbe.standby.enabled {
-            let menu = UIAlertController(title:"持续待命显示测试",message:"下一次唤醒发送A1至A4四段合成文字，最后一段带校验码；不请求云服务。无10秒强制关闭，验收眼镜自己的收尾行为。",preferredStyle:.actionSheet)
-            menu.addAction(UIAlertAction(title:"下一次唤醒：A1–A4增量测试",style:.default) { [weak self] _ in self?.voiceProbe.armIncrementalFixture() })
+            let menu = UIAlertController(title:"継続待機の表示テスト",message:"次回のウェイクアップ時に A1 から A4 までの4区間の合成テキストを送信し、最後の区間にはチェックコードを付けます；クラウドサービスへのリクエストはしません。10秒での強制終了はなく、グラス自身の終了動作を確認します。",preferredStyle:.actionSheet)
+            menu.addAction(UIAlertAction(title:"次回のウェイクアップ：A1–A4 増分テスト",style:.default) { [weak self] _ in self?.voiceProbe.armIncrementalFixture() })
             let duplex = voiceProbe.standby.continuousASREnabled
-            menu.addAction(UIAlertAction(title:duplex ? "关闭持续ASR并行实验" : "开启持续ASR并行实验（120秒）",style:.default) { [weak self] _ in self?.voiceProbe.setContinuousASR(!duplex) })
-            menu.addAction(UIAlertAction(title:"结束本轮显示",style:.default) { [weak self] _ in self?.voiceProbe.standby.cancelCurrentRound() })
-            menu.addAction(UIAlertAction(title:"取消",style:.cancel))
+            menu.addAction(UIAlertAction(title:duplex ? "継続ASR並行実験をオフ" : "継続ASR並行実験をオン（120秒）",style:.default) { [weak self] _ in self?.voiceProbe.setContinuousASR(!duplex) })
+            menu.addAction(UIAlertAction(title:"今回の表示を終了",style:.default) { [weak self] _ in self?.voiceProbe.standby.cancelCurrentRound() })
+            menu.addAction(UIAlertAction(title:"キャンセル",style:.cancel))
             menu.popoverPresentationController?.sourceView = view
             menu.popoverPresentationController?.sourceRect = CGRect(x:view.bounds.midX,y:440,width:1,height:1)
             present(menu,animated:true)
             return
         }
-        let menu = UIAlertController(title:"显示边界：语音文字页", message:"只测试固件现有文字页，不是图片/任意UI。每项需主动唤醒，8秒后显示，保持10秒后退出。", preferredStyle:.actionSheet)
+        let menu = UIAlertController(title:"表示境界：音声テキストページ", message:"ファームウェアの既存テキストページのみをテストします。画像や任意の UI ではありません。各項目には能動的なウェイクアップが必要で、8秒後に表示し、10秒間保持した後に終了します。", preferredStyle:.actionSheet)
         for fixture in DisplayBoundaryFixture.all {
             menu.addAction(UIAlertAction(title:"\(fixture.id) · \(fixture.name)", style:.default) { [weak self] _ in
                 self?.confirmDisplayFixture(fixture)
             })
         }
-        menu.addAction(UIAlertAction(title:"结束当前测试", style:.destructive) { [weak self] _ in self?.voiceProbe.stopDisplayTest() })
-        menu.addAction(UIAlertAction(title:"取消", style:.cancel))
+        menu.addAction(UIAlertAction(title:"現在のテストを終了", style:.destructive) { [weak self] _ in self?.voiceProbe.stopDisplayTest() })
+        menu.addAction(UIAlertAction(title:"キャンセル", style:.cancel))
         menu.popoverPresentationController?.sourceView = view
         menu.popoverPresentationController?.sourceRect = CGRect(x:view.bounds.midX,y:view.bounds.midY,width:1,height:1)
         present(menu, animated:true)
@@ -475,16 +475,16 @@ final class ProbeController: UIViewController, CBCentralManagerDelegate, StreamD
     private func confirmDisplayFixture(_ fixture: DisplayBoundaryFixture) {
         guard let core, let linked = core.linkedDevices(), linked.count == 1,
               let device = linked.first, device.isConnected(), device.bleStateByte() == 9 else {
-            log("没有唯一已认证连接，不启动显示边界测试"); return
+            log("唯一の認証済み接続がないため、表示境界テストを開始しません"); return
         }
         let deviceID = device.deviceID()
-        let alert = UIAlertController(title:"\(fixture.id) · \(fixture.name)", message:"\(fixture.text)\n\n仅主动唤醒后短时收音，不保存/上传。8秒后发送上述合成文字，10秒后自动退出。每次只验本项，90秒未唤醒取消。", preferredStyle:.alert)
-        alert.addAction(UIAlertAction(title:"取消", style:.cancel))
-        alert.addAction(UIAlertAction(title:"准备本项测试", style:.default) { [weak self] _ in
+        let alert = UIAlertController(title:"\(fixture.id) · \(fixture.name)", message:"\(fixture.text)\n\n能動的なウェイクアップ後のみ短時間収音し、保存/アップロードはしません。8秒後に上記の合成テキストを送信し、10秒後に自動で終了します。毎回この項目のみを検証します。90秒間ウェイクアップがなければキャンセルします。", preferredStyle:.alert)
+        alert.addAction(UIAlertAction(title:"キャンセル", style:.cancel))
+        alert.addAction(UIAlertAction(title:"この項目のテストを準備", style:.default) { [weak self] _ in
             guard let linked = core.linkedDevices(), linked.count == 1,
                   let current = linked.first, current.deviceID() == deviceID,
                   current.isConnected(), current.bleStateByte() == 9 else {
-                self?.log("连接已变化，不就绪显示测试"); return
+                self?.log("接続が変化したため、表示テストの準備ができていません"); return
             }
             self?.voiceProbe.arm(deviceID:deviceID, fixture:fixture)
         })
@@ -494,23 +494,23 @@ final class ProbeController: UIViewController, CBCentralManagerDelegate, StreamD
     @objc private func confirmVoiceWakeup() {
         guard let core, let linked = core.linkedDevices(), linked.count == 1,
               let device = linked.first, device.isConnected(), device.bleStateByte() == 9 else {
-            log("没有唯一已认证连接，未开启语音唤醒"); return
+            log("唯一の認証済み接続がないため、音声ウェイクアップを有効化していません"); return
         }
         let deviceID = device.deviceID()
-        let alert = UIAlertController(title: "开启这副眼镜的语音唤醒？", message: "发送官方实测的 Launcher/type16：set_ai_voice_wakeup，mode=1。只改变唤醒开关；不录音、不上传。需要眼镜回传状态和真人唤醒验收。", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "取消", style: .cancel))
-        alert.addAction(UIAlertAction(title: "开启测试", style: .default) { [weak self] _ in
+        let alert = UIAlertController(title: "このグラスの音声ウェイクアップを有効化しますか？", message: "公式に実測済みの Launcher/type16：set_ai_voice_wakeup、mode=1 を送信します。ウェイクアップスイッチのみを変更します；録音やアップロードはしません。グラスからのステータス応答と、人が実際にウェイクアップできるかの確認が必要です。", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "キャンセル", style: .cancel))
+        alert.addAction(UIAlertAction(title: "テストを有効化", style: .default) { [weak self] _ in
             guard let current = core.linkedDevices()?.first(where: { $0.deviceID() == deviceID }),
                   current.isConnected(), current.bleStateByte() == 9 else {
-                self?.log("连接已变化，取消开启"); return
+                self?.log("接続が変化したため、有効化をキャンセルしました"); return
             }
             do {
                 let payload = try LauncherControlPrototype.encode(.enableVoiceWakeup)
                 let message = try MessageFactory.make(payload: payload, deviceID: deviceID,
                     business: .launcher, messageID: UUID().uuidString)
                 try core.sendMessage(message)
-                self?.log("已提交 Launcher/type16 set_ai_voice_wakeup mode=1 bytes=\(payload.count)；等待眼镜回传，非唤醒成功")
-            } catch { self?.log("开启语音唤醒发送失败（不记录原始错误）") }
+                self?.log("Launcher/type16 set_ai_voice_wakeup mode=1 bytes=\(payload.count) を送信しました；グラスからの応答を待機中であり、ウェイクアップ成功ではありません")
+            } catch { self?.log("音声ウェイクアップの送信に失敗しました（元のエラーは記録しません）") }
         })
         present(alert, animated: true)
     }
@@ -518,24 +518,24 @@ final class ProbeController: UIViewController, CBCentralManagerDelegate, StreamD
     @objc private func confirmTextTest() {
         guard let core, let linked = core.linkedDevices(), linked.count == 1,
               let device = linked.first, device.isConnected(), device.bleStateByte() == 9 else {
-            log("没有唯一已认证连接，未发消息"); return
+            log("唯一の認証済み接続がないため、メッセージを送信していません"); return
         }
         let deviceID = device.deviceID()
-        let text = "自定义连接测试 1730"
-        let alert = UIAlertController(title:"发送固定 ASR 文字？", message:"内容：\(text)\n这是 voiceAssistant/type=5，不是 ANCS 通知。可能需要先唤醒眼镜；实际显示需本人确认。", preferredStyle:.alert)
-        alert.addAction(UIAlertAction(title:"取消", style:.cancel))
-        alert.addAction(UIAlertAction(title:"发送测试", style:.default) { [weak self] _ in
+        let text = "カスタム接続テスト 1730"
+        let alert = UIAlertController(title:"固定の ASR テキストを送信しますか？", message:"内容：\(text)\nこれは voiceAssistant/type=5 であり、ANCS 通知ではありません。先にグラスのウェイクアップが必要な場合があります；実際の表示は本人確認が必要です。", preferredStyle:.alert)
+        alert.addAction(UIAlertAction(title:"キャンセル", style:.cancel))
+        alert.addAction(UIAlertAction(title:"テストを送信", style:.default) { [weak self] _ in
             guard let current = core.linkedDevices()?.first(where: { $0.deviceID() == deviceID }),
                   current.isConnected(), current.bleStateByte() == 9 else {
-                self?.log("连接已变化，取消发送"); return
+                self?.log("接続が変化したため、送信をキャンセルしました"); return
             }
             do {
                 let payload = try AssistantTextPrototype.asrText(text, isFinal:true)
                 let message = try MessageFactory.make(payload:payload, deviceID:deviceID,
                                                      business:.voiceAssistant, messageID:UUID().uuidString)
                 try core.sendMessage(message)
-                self?.log("本 App→眼镜 type=5 bytes=\(payload.count) 调用已返回；等待回调与实际显示")
-            } catch { self?.log("文字测试发送失败（未记录错误正文）") }
+                self?.log("本 App→グラス type=5 bytes=\(payload.count) の呼び出しが戻りました；コールバックと実際の表示を待機中")
+            } catch { self?.log("テキストテストの送信に失敗しました（エラーの本文は記録していません）") }
         })
         present(alert, animated:true)
     }
@@ -552,14 +552,14 @@ final class ProbeController: UIViewController, CBCentralManagerDelegate, StreamD
         guard central?.state == .poweredOn else { return }
         scanRequested = false
         central?.scanForPeripherals(withServices: [CBUUID(string: "B81D")], options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
-        log("扫描已验证的 B81D 服务（15 秒，无连接/写入）")
+        log("検証済みの B81D サービスをスキャン中（15秒、接続/書き込みなし）")
         for p in central!.retrieveConnectedPeripherals(withServices: [CBUUID(string: "B81D")]) {
             devices[p.identifier] = p
-            log("系统已连 RayNeo 服务: \(p.name ?? "unnamed")")
+            log("システム接続済みの RayNeo サービス: \(p.name ?? "unnamed")")
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 15) { [weak self] in
             self?.central?.stopScan()
-            self?.log("扫描结束")
+            self?.log("スキャン終了")
         }
     }
 
@@ -578,32 +578,32 @@ final class ProbeController: UIViewController, CBCentralManagerDelegate, StreamD
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String: Any], rssi RSSI: NSNumber) {
         devices[peripheral.identifier] = peripheral
         if seen.insert(peripheral.identifier).inserted {
-            log("发现: \(peripheral.name ?? "unnamed") RSSI=\(RSSI)")
-            log("广播字段: \(advertisementData.keys.sorted().joined(separator: ", "))")
+            log("検出: \(peripheral.name ?? "unnamed") RSSI=\(RSSI)")
+            log("アドバタイズメントフィールド: \(advertisementData.keys.sorted().joined(separator: ", "))")
         }
         if !parsedAdvertisements.contains(peripheral.identifier), let data = advertisementData[CBAdvertisementDataManufacturerDataKey] as? Data {
             parsedAdvertisements.insert(peripheral.identifier)
-            log("制造商广播长度=\(data.count)，调用 ObjC 解析入口")
+            log("メーカーアドバタイズメント長=\(data.count)。ObjC の解析エントリを呼び出します")
             if let id = RNProbeIdentifier(data, (advertisementData[CBAdvertisementDataIsConnectable] as? NSNumber)?.boolValue ?? false) {
                 sdkDeviceIDs.insert(id)
                 if let sdkPeripheral = RNProbeSDKPeripheral(peripheral.identifier), let modelCatalog {
                     sdkPeripherals[peripheral.identifier] = RNProbePeripheral(data, sdkPeripheral, advertisementData, modelCatalog)
-                    log("已由 SDK 自己的 CBCentralManager 解析外设对象")
-                } else { log("SDK central 尚未就绪，请加载后重新扫描") }
-                log("SDK 广播解析成功，已取得协议设备标识（不显示原值）")
-            } else { log("SDK 广播解析未返回设备标识: \(RNProbeDiagnosis())") }
+                    log("SDK 自身の CBCentralManager によりペリフェラルオブジェクトを解析済み")
+                } else { log("SDK central の準備がまだできていません。読み込み後に再スキャンしてください") }
+                log("SDK アドバタイズメント解析に成功。プロトコルのデバイス識別子を取得済み（元の値は表示しません）")
+            } else { log("SDK アドバタイズメント解析がデバイス識別子を返しませんでした: \(RNProbeDiagnosis())") }
         }
     }
 
     @objc private func accessories() {
         let matches = EAAccessoryManager.shared().connectedAccessories.filter { $0.name.localizedCaseInsensitiveContains("rayneo") }
-        log("本 App 可见 RayNeo MFi 附件: \(matches.count)")
+        log("本 App から見える RayNeo MFi アクセサリ: \(matches.count)")
         for a in matches { log("\(a.name) protocols=\(a.protocolStrings.joined(separator: ","))") }
         guard eaSession == nil, let accessory = matches.first,
               accessory.protocolStrings.contains("com.rayneo.venus.pub") else { return }
         eaSession = EASession(accessory: accessory, forProtocol: "com.rayneo.venus.pub")
-        guard let session = eaSession else { log("EASession 创建失败"); return }
-        log("EASession 已创建；只测打开流，不发送业务消息")
+        guard let session = eaSession else { log("EASession の作成に失敗"); return }
+        log("EASession を作成済み；ストリームを開くテストのみを行い、業務メッセージは送信しません")
         for stream in [session.inputStream as Stream?, session.outputStream as Stream?].compactMap({$0}) {
             stream.delegate = self
             stream.schedule(in: .main, forMode: .default)
@@ -617,7 +617,7 @@ final class ProbeController: UIViewController, CBCentralManagerDelegate, StreamD
                 stream.delegate = nil
             }
             self.eaSession = nil
-            self.log("MFi 测试流已关闭")
+            self.log("MFi テストストリームを閉じました")
         }
     }
 
@@ -630,74 +630,74 @@ final class ProbeController: UIViewController, CBCentralManagerDelegate, StreamD
     @objc private func sdkDiscovery() {
         if core == nil { loadCore() }
         guard let core else { return }
-        do { try core.discover(); log("SDK discoverStart 调用成功（不代表认证成功）") }
+        do { try core.discover(); log("SDK discoverStart の呼び出しに成功（認証成功を意味しません）") }
         catch { log("SDK discovery error: \(error)") }
     }
 
     @objc private func connectSDK() {
-        guard !voiceProbe.standby.enabled else { log("持续服务管理连接中，请先关闭再手动连接"); return }
-        guard let core else { log("先加载通信核心并发现眼镜"); return }
+        guard !voiceProbe.standby.enabled else { log("継続サービスが接続を管理中です。先にオフにしてから手動で接続してください"); return }
+        guard let core else { log("先に通信コアを読み込み、グラスを検出してください"); return }
         // findCoreDevice compares CBPeripheral.identifier.uuidString, NOT the
         // 6-byte identifier carried in the manufacturer's advertisement.
         let found = sdkPeripherals.compactMap { uuid, peripheral in
             let id = uuid.uuidString
             return (core.findDevice(id) ?? convertPeripheral(peripheral)).map { (id, $0) }
         }
-        guard found.count == 1, let (id, target) = found.first else { log("SDK 缓存匹配设备数=\(found.count)，未连接"); return }
+        guard found.count == 1, let (id, target) = found.first else { log("SDK キャッシュの一致デバイス数=\(found.count)。接続していません"); return }
         do {
             // No account/token/key copied from the official app. Normal SDK path.
             try core.connectBLE(target)
-            log("SDK BLE 请求已提交，等待设备认证状态")
+            log("SDK BLE リクエストを送信済み。デバイスの認証状態を待機中")
             for delay in [2.0,5.0,10.0,20.0,30.0,45.0] {
                 DispatchQueue.main.asyncAfter(deadline:.now()+delay) { [weak self] in
                     let linked = core.linkedDevices() ?? []
                     let cached = core.findDevice(id)
                     let live = linked.first { $0.deviceID() == target.deviceID() }
                     let fresh = live ?? cached
-                    self?.log("\(Int(delay))s SDK linkedCount=\(linked.count), connected=\(fresh?.isConnected() ?? false), BLE状态字节=\(fresh?.bleStateByte() ?? 255)")
+                    self?.log("\(Int(delay))s SDK linkedCount=\(linked.count), connected=\(fresh?.isConnected() ?? false), BLE状態バイト=\(fresh?.bleStateByte() ?? 255)")
                     if let live, let cached, live.bleStateByte() != cached.bleStateByte() {
-                        self?.log("SDK 缓存对象状态不一致：linked=\(live.bleStateByte()), findDevice=\(cached.bleStateByte())；以上显示 linked 对象")
+                        self?.log("SDK キャッシュオブジェクトの状態が不一致：linked=\(live.bleStateByte()), findDevice=\(cached.bleStateByte())；上記は linked オブジェクトを表示しています")
                     }
                 }
             }
-        } catch { log("SDK BLE 连接错误: \(error)") }
+        } catch { log("SDK BLE 接続エラー: \(error)") }
     }
 
     @objc private func confirmUnbind() {
         guard let core, let device = core.linkedDevices()?.first, device.isConnected(), device.bleStateByte() == 9 else {
-            log("没有已认证连接，未执行解绑")
+            log("認証済み接続がないため、紐づけ解除を実行していません")
             return
         }
         let targetID = device.deviceID()
-        let alert = UIAlertController(title: "解除这副测试眼镜的绑定？", message: "用于切换回另一台手机。可能清除眼镜内容；电脑录音副本不受影响。执行后停止本 App，并在系统蓝牙中忽略设备。", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "取消", style: .cancel))
-        alert.addAction(UIAlertAction(title: "确认解绑", style: .destructive) { [weak self] _ in
+        let alert = UIAlertController(title: "このテスト用グラスのバインドを解除しますか？", message: "別のスマートフォンへ切り戻すための操作です。グラスの内容が消去される場合があります；PC の録音コピーには影響しません。実行後は本 App を停止し、システムの Bluetooth でデバイスを無視してください。", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "キャンセル", style: .cancel))
+        alert.addAction(UIAlertAction(title: "紐づけ解除を確認", style: .destructive) { [weak self] _ in
             // The alert can remain open while the glasses disconnect. Re-fetch
             // the target and validate its real CBPeripheral immediately before
             // calling the SDK, which otherwise silently performs local cleanup.
             guard let self, let fresh = core.linkedDevices()?.first(where: { $0.deviceID() == targetID }),
                   fresh.isConnected(), fresh.bleStateByte() == 9 else {
-                self?.log("确认时认证连接已失效；拒绝把离线本地清理当作眼镜解绑")
+                self?.log("確認時点で認証済み接続が無効でした；オフラインのローカルクリーンアップをグラスの紐づけ解除とみなすことを拒否しました")
                 return
             }
-            self.logDeviceState(fresh, prefix: "解绑前复核")
+            self.logDeviceState(fresh, prefix: "紐づけ解除前の再確認")
             self.disableStandby()
             let transport = fresh.transport()
             guard transport.rnSDKPeripheral()?.state == .connected,
                   [UInt8(1), UInt8(3)].contains(transport.rnSDKTransportState()) else {
-                self.log("底层 BLE 不满足 SDK 在线解绑条件，未执行；保留本 App 绑定以便重试")
+                self.log("低レイヤ BLE が SDK のオンライン紐づけ解除の条件を満たさないため、実行しませんでした；再試行のために本 App のバインドを保持します")
                 return
             }
             do {
                 self.central?.stopScan()
                 try core.unbind(fresh)
-                self.log("SDK unbound 调用已返回，等待远端证据；本地数量归零不等于远端成功")
+                self.log("SDK unbound の呼び出しが戻りました。リモート側の証拠を待機中；ローカル件数がゼロになってもリモート側の成功を意味しません")
                 for delay in [2.0,5.0,10.0] {
                     DispatchQueue.main.asyncAfter(deadline: .now()+delay) { [weak self] in
-                        self?.log("解绑 \(Int(delay))s：本 App 绑定数=\(core.bondedDevices()?.count ?? 0)，连接数=\(core.linkedDevices()?.count ?? 0)")
+                        self?.log("紐づけ解除 \(Int(delay))s：本 App のバインド数=\(core.bondedDevices()?.count ?? 0)、接続数=\(core.linkedDevices()?.count ?? 0)")
                     }
                 }
-            } catch { self.log("解绑请求错误: \(error)") }
+            } catch { self.log("紐づけ解除リクエストエラー: \(error)") }
         })
         present(alert, animated: true)
     }

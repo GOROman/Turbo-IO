@@ -70,25 +70,25 @@ final class CoreMessageReceiver: RNMessageDelegate {
         let count = (counts[key] ?? 0) + 1; counts[key] = count
         lock.unlock()
         if count <= 3 || count % 50 == 0 || (business == 13 && ![3,163,164].contains(metadata?.messageType ?? 0)) {
-            emit("眼镜→本 App \(key) audioBytes=\(metadata?.dataBytes.map(String.init) ?? "none") count=\(count)")
+            emit("グラス→本 App \(key) audioBytes=\(metadata?.dataBytes.map(String.init) ?? "none") count=\(count)")
             if business == 15 && (count == 1 || metadata?.messageType == 17) {
-                emit("Launcher结构 \(LauncherStructure.inspect(payload))")
+                emit("Launcher構造 \(LauncherStructure.inspect(payload))")
             }
             if business == 13, let type = metadata?.messageType, [8,48].contains(type) {
-                emit("助手退出/离线状态 type=\(type) \(LauncherStructure.inspect(payload))")
+                emit("アシスタント終了／オフライン状態 type=\(type) \(LauncherStructure.inspect(payload))")
             }
         }
     }
     func message(_ core: RNCoreConnect, deviceListChanged: [RNDevice], _ reason: String) {
-        emit("消息接口设备变更 count=\(deviceListChanged.count)")
+        emit("メッセージインターフェースのデバイス変更 count=\(deviceListChanged.count)")
     }
     func message(_ core: RNCoreConnect, sendSuccess: RNMessage) {
-        emit("SDK sendSuccess 回调（不等于眼镜实际显示）")
+        emit("SDK sendSuccess コールバック（グラスへの実際の表示とは限りません）")
     }
     func message(_ core: RNCoreConnect, sendError: RNMessage, _ code: Int, _ reason: String) {
-        emit("SDK sendError code=\(code)（不记录原始错误正文）")
+        emit("SDK sendError code=\(code)（元のエラー本文は記録しません）")
     }
     func messageDecryptFail(_ core: RNCoreConnect, device: RNDevice, sourceData: Data, sourceLen: Int, destLen: Int) {
-        emit("SDK 解密失败 sourceLen=\(sourceLen) destLen=\(destLen)")
+        emit("SDK 復号失敗 sourceLen=\(sourceLen) destLen=\(destLen)")
     }
 }

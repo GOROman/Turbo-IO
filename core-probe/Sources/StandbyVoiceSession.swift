@@ -8,7 +8,7 @@ final class StandbyVoiceSession {
     var send: ((String, Command) -> Bool)?
     var log: ((String) -> Void)?
     var phaseChanged: ((Phase) -> Void)?
-    var makeText: () -> String = { "待命测试 " + UUID().uuidString.prefix(8) }
+    var makeText: () -> String = { "待機テスト " + UUID().uuidString.prefix(8) }
     var vadEnabled = false // Set before enabling; legacy fixtures stay unchanged.
     var cloudEnabled = false
     var continuousASREnabled = false // Explicit experimental opt-in, not persisted.
@@ -37,7 +37,7 @@ final class StandbyVoiceSession {
         disable()
         self.target = target
         setPhase(connected ? .idle : .waitingForConnection)
-        log?("持续服务已开启；等待真实唤醒，无90秒arm超时；未请求收音")
+        log?("継続サービスを開始しました；実際のウェイクアップを待機中、90秒のarmタイムアウトなし；収音は未リクエスト")
     }
     func disable() {
         closeRound(sendExit: true)
@@ -52,16 +52,16 @@ final class StandbyVoiceSession {
             followupWait = nil
             sessionDeadline = nil; cloudSessionID = nil; cloudRoundID = nil
             setPhase(.waitingForConnection)
-            log?("持续服务连接未就绪，本轮取消；未声称远端已停止")
+            log?("継続サービスの接続準備ができていません。本ラウンドをキャンセルします；リモート側が停止したとは主張しません")
         } else if ready, phase == .waitingForConnection {
             setPhase(.idle)
-            log?("持续服务认证连接恢复，回到待命；不自动收音")
+            log?("継続サービスの認証済み接続が復旧し、待機に戻りました；自動では収音しません")
         }
     }
     func receive(from source: String, type: UInt32, audioBytes: Int, now: TimeInterval) {
         guard source == target, phase != .waitingForConnection, phase != .disabled else { return }
         if type == 8 {
-            log?("眼镜主动type8退出 phase=\(phase.rawValue)；尊重退出，不自动重新点亮")
+            log?("グラス側からtype8で終了 phase=\(phase.rawValue)；終了を尊重し、自動では再点灯しません")
             closeRound(sendExit: false)
             return
         }
@@ -71,20 +71,20 @@ final class StandbyVoiceSession {
                 if phase != .recording {
                     duplexPackets += 1
                     if duplexPackets == 1 || duplexPackets % 100 == 0 {
-                        log?("持续ASR输出期音频 packets=\(duplexPackets) phase=\(phase.rawValue)；只统计长度")
+                        log?("継続ASR出力中の音声 packets=\(duplexPackets) phase=\(phase.rawValue)；長さのみ集計")
                     }
                 }
             }
             guard phase == .recording, audioBytes > 0 else { return }
             packets += 1
             bytes += min(audioBytes, 1_048_576)
-            if packets == 1 { log?("持续会话收到首条非空type3；只统计长度，不保存音频") }
+            if packets == 1 { log?("継続セッションで最初の空でないtype3を受信；長さのみ集計し、音声は保存しません") }
             return
         }
         if continuousASREnabled, active, type == 11 {
             // Next-turn request, NOT a render-complete ACK. Completion owns
             // the idle deadline; early/missing/duplicate requests cannot change it.
-            log?("持续ASR收到type11 phase=\(phase.rawValue)；不改变回答完成后的静默计时")
+            log?("継続ASRでtype11を受信 phase=\(phase.rawValue)；回答完了後の無音タイマーは変更しません")
             return
         }
         // 0x0B is a next-round event, not permission to start from idle.
@@ -104,7 +104,7 @@ final class StandbyVoiceSession {
         guard write(.startAudio) else { failRound(); return }
         deadline = now + (cloudEnabled ? 20 : 8)
         setPhase(.recording)
-        log?("持续会话 round=\(round) type\(type)→type2/rc1；\(cloudEnabled ? 20 : 8)秒上限 cloud=\(cloudEnabled)")
+        log?("継続セッション round=\(round) type\(type)→type2/rc1；\(cloudEnabled ? 20 : 8)秒上限 cloud=\(cloudEnabled)")
     }
     func vadFrame(speech: Bool, now: TimeInterval) {
         guard vadEnabled, !continuousASREnabled, phase == .recording else { return }
@@ -112,39 +112,39 @@ final class StandbyVoiceSession {
         guard phase == .recording else { return }
         switch endpoint.accept(speech:speech) {
         case .none: break
-        case .began: log?("VAD检测到语音开始；120ms/200ms窗口")
+        case .began: log?("VADが音声開始を検出；120ms/200msウィンドウ")
         case .ended:
-            if cloudEnabled { log?("本地VAD旁路观察到停顿；由云端决定句末，不截断"); return }
-            log?("VAD检测到语音结束；连续900ms非语音；提前停止")
+            if cloudEnabled { log?("ローカルVADのバイパスでポーズを観測；文末はクラウドが決定し、切り捨てません"); return }
+            log?("VADが音声終了を検出；900ms連続で非音声；早期に停止")
             finishRecording(now:now, reply:true)
         }
     }
     func audioDiscontinuity() { endpoint.discontinuity() }
     func audioFailed() {
         guard vadEnabled, (phase == .recording || (continuousASREnabled && active)) else { return }
-        log?("VAD解码/分类失败，本轮停止且不生成回答；不是静音判定")
+        log?("VADのデコード/分類に失敗。本ラウンドを停止し回答は生成しません；無音判定ではありません")
         closeRound(sendExit:true)
     }
     func tick(now: TimeInterval) {
         if continuousASREnabled, active {
             if let sessionDeadline, now >= sessionDeadline {
-                log?("持续ASR实验达到120秒上限，停止收音并退出"); closeRound(sendExit:true); return
+                log?("継続ASR実験が120秒上限に到達。収音を停止して終了"); closeRound(sendExit:true); return
             }
             if let lastDuplexAudio, now-lastDuplexAudio > 5 {
-                log?("持续ASR超过5秒没有音频回调，取消；缺流不当成静音句末"); closeRound(sendExit:true); return
+                log?("継続ASRで5秒を超えて音声コールバックなし。キャンセルします；ストリーム欠落を無音の文末とは扱いません"); closeRound(sendExit:true); return
             }
         }
         if phase == .displaying, let wait = followupWait,
            wait.round == cloudRoundID, now >= wait.deadline {
             followupWait = nil
-            log?("回答完成后10秒无有效续说→停止音频/退出；服务保留待命")
+            log?("回答完了後10秒間、有効な続きの発話なし→音声停止/終了；サービスは待機を維持")
             if continuousASREnabled, !write(.vadTimeout) { failRound(); return }
             closeRound(sendExit:true)
             return
         }
         if vadEnabled, phase == .recording, !endpoint.hasSpeech,
            let noSpeechDeadline, now >= noSpeechDeadline {
-            log?("VAD等待5秒未确认语音，退出且不生成回答")
+            log?("VADが5秒待っても音声を確認できず。終了し回答は生成しません")
             closeRound(sendExit:true)
             return
         }
@@ -152,19 +152,19 @@ final class StandbyVoiceSession {
         self.deadline = nil
         if phase == .recording {
             if cloudEnabled {
-                log?("云对话达到20秒收音保护；取消本轮，不把超时当云句末")
+                log?("クラウド対話が20秒の収音ガードに到達；本ラウンドをキャンセルし、タイムアウトをクラウドの文末とは扱いません")
                 closeRound(sendExit:true)
                 return
             }
-            if vadEnabled { log?("VAD达到8秒保护上限；不是检测到句末") }
+            if vadEnabled { log?("VADが8秒のガード上限に到達；文末を検出したわけではありません") }
             finishRecording(now:now, reply:!vadEnabled || endpoint.hasSpeech)
         } else if phase == .processing {
-            log?("云对话处理超过30秒，取消并退出")
+            log?("クラウド対話の処理が30秒を超過。キャンセルして終了")
             closeRound(sendExit:true)
         } else if phase == .displaying {
             guard write(.exit) else { failRound(); return }
             setPhase(.idle)
-            log?("持续会话type7退出已提交，服务仍开启，等待下次唤醒")
+            log?("継続セッションのtype7終了を送信済み。サービスは継続中で、次回のウェイクアップを待機")
         }
     }
     func cloudEndpoint(id: UUID, now: TimeInterval) {
@@ -172,25 +172,25 @@ final class StandbyVoiceSession {
         guard write(continuousASREnabled ? .vadStop : .stopAudio) else { failRound(); return }
         deadline = now + 30
         setPhase(.processing)
-        log?(continuousASREnabled ? "云ASR句末→type4/rc2；持续收音并行等待模型，不结束ASR任务" : "云ASR句末→type2/rc2停止收音，等待云回答；音频不落盘")
+        log?(continuousASREnabled ? "クラウドASRの文末→type4/rc2；収音を継続しながら並行してモデルを待機し、ASRタスクは終了しません" : "クラウドASRの文末→type2/rc2で収音を停止し、クラウドの回答を待機；音声はディスクに保存しません")
     }
     func cloudUtteranceBegan(id: UUID, session: UUID, now: TimeInterval) {
         guard continuousASREnabled, cloudEnabled, active, cloudSessionID == session,
               cloudRoundID != id else { return }
         let interrupting = phase == .processing || phase == .displaying
-        if followupWait != nil { log?("有效新句取消旧轮续说退出计时") }
+        if followupWait != nil { log?("有効な新しい発話により、旧ラウンドの続き発話の終了タイマーをキャンセル") }
         followupWait = nil
         cloudRoundID = id; transcript = ""; transcriptFinal = false; answerBytes = 0
         deadline = now + 20
         guard write(.vadStart) else { failRound(); return }
         setPhase(.recording)
-        log?("云起句→type4/rc1，更新回答代际 interrupting=\(interrupting)；ASR会话保持，不用本地VAD")
+        log?("クラウドの発話開始→type4/rc1、回答の世代を更新 interrupting=\(interrupting)；ASRセッションを保持し、ローカルVADは使いません")
     }
     func cloudEmptyUtterance(id: UUID, now: TimeInterval) {
         guard continuousASREnabled, cloudRoundID == id, phase == .recording else { return }
         // Reached only if earlier partial text already committed a new turn.
         // An empty final retracts it; do not invent a final or leave loading.
-        log?("有效临时文字后云端空句撤回，退出本轮避免loading；不拿临时文字生成回答")
+        log?("有効な暫定テキストの後にクラウドが空の発話を取り消し。本ラウンドを終了してloading状態を回避；暫定テキストからは回答を生成しません")
         closeRound(sendExit:true)
     }
     func cloudTranscript(_ text: String, final: Bool, id: UUID) {
@@ -198,7 +198,7 @@ final class StandbyVoiceSession {
               !text.isEmpty, text.utf8.count <= 512 else { return }
         guard write(.streamText(text,final)) else { failRound(); return }
         transcript = text; transcriptFinal = final
-        log?("云识别type5提交 utf8Bytes=\(text.utf8.count) wireKey=final final=\(final)；正文不入日志")
+        log?("クラウド認識type5を送信 utf8Bytes=\(text.utf8.count) wireKey=final final=\(final)；本文はログに記録しません")
     }
     func cloudText(_ text: String, final: Bool, id: UUID, now: TimeInterval) {
         guard cloudEnabled, cloudRoundID == id, phase == .processing,
@@ -212,7 +212,7 @@ final class StandbyVoiceSession {
             answerBytes += text.utf8.count
             // Processing timeout measures a stalled stream, not total answer length.
             deadline = now + 30
-            log?("增量回答type32提交 chunkBytes=\(text.utf8.count) totalBytes=\(answerBytes) wireFinal=false cloudEOF=\(final)；正文不入日志")
+            log?("増分回答type32を送信 chunkBytes=\(text.utf8.count) totalBytes=\(answerBytes) wireFinal=false cloudEOF=\(final)；本文はログに記録しません")
         }
         if final { cloudComplete(id:id,now:now) }
     }
@@ -224,26 +224,26 @@ final class StandbyVoiceSession {
         // submission completion, not a lens render ACK. Never start at first token.
         followupWait = (id, now + 10)
         setPhase(.displaying)
-        log?("workflow回答type12完成已提交；启动10秒静默退出，有效新句取消；非镜片渲染回执")
+        log?("workflow回答type12の完了を送信済み；10秒の無音終了タイマーを開始し、有効な新しい発話でキャンセル；レンズ描画の受領確認ではありません")
     }
     func cloudFailed(id: UUID) {
         guard cloudRoundID == id || cloudSessionID == id, active else { return }
-        log?("云对话失败或取消，退出本轮；不伪造模型回答")
+        log?("クラウド対話が失敗またはキャンセル。本ラウンドを終了；モデルの回答を偽装しません")
         closeRound(sendExit:true)
     }
     private func finishRecording(now: TimeInterval, reply: Bool) {
         deadline = nil
         guard write(.stopAudio) else { failRound(); return }
-        log?("持续会话type2/rc2已提交 packets=\(packets) dataBytes=\(bytes) 音频保存=0")
+        log?("継続セッションtype2/rc2を送信済み packets=\(packets) dataBytes=\(bytes) 音声保存=0")
         guard reply, packets > 0, bytes > 0 else { closeRound(sendExit:true); return }
         guard write(.text(response)) else { failRound(); return }
         deadline = now + 10
         setPhase(.displaying)
-        log?("持续会话type5合成随机文字已提交，显示10秒；不是识别或模型回答")
+        log?("継続セッションtype5の合成ランダムテキストを送信済み。10秒表示；認識結果でもモデルの回答でもありません")
     }
     func executionExpired() {
         guard active else { return }
-        log?("系统后台执行时间到期，停止本轮，保留待命意图；后台运行不保证")
+        log?("システムのバックグラウンド実行時間が期限切れ。本ラウンドを停止し、待機の意図は保持；バックグラウンド動作は保証されません")
         closeRound(sendExit: true)
     }
     func cancelCurrentRound() { if active { closeRound(sendExit:true) } }
@@ -258,7 +258,7 @@ final class StandbyVoiceSession {
         cloudSessionID = nil; sessionDeadline = nil; lastDuplexAudio = nil
         answerBytes = 0
         if enabled { setPhase(ok ? .idle : .waitingForConnection) }
-        if !ok { log?("持续会话停止/退出提交失败；需要连接复核，不声称远端已停止") }
+        if !ok { log?("継続セッションの停止/終了の送信に失敗；接続の再確認が必要で、リモート側が停止したとは主張しません") }
     }
     private func failRound() {
         // Best-effort bounded cleanup; no repeated sends or automatic recording.
@@ -269,7 +269,7 @@ final class StandbyVoiceSession {
         cloudSessionID = nil; sessionDeadline = nil; lastDuplexAudio = nil
         answerBytes = 0
         setPhase(.waitingForConnection)
-        log?("持续会话发送失败，取消本轮并等待连接复核")
+        log?("継続セッションの送信に失敗。本ラウンドをキャンセルし、接続の再確認を待機")
     }
     private func write(_ command: Command) -> Bool {
         guard let target else { return false }
