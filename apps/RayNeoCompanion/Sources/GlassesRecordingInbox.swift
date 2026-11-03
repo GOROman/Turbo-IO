@@ -41,10 +41,10 @@ final class GlassesRecordingInbox: @unchecked Sendable {
         let completionReported: Bool
         var mayRecover: Bool { !failed && !hasGaps && receivedBytes > 0 && (sealed || completionReported) }
         var status: String {
-            if failed { return "接收异常 · 不可标完整" }
-            if sealed { return "曾封装 · 恢复前需重新校验" }
-            if hasGaps { return "存在空洞 · 原始文件保留" }
-            return completionReported ? "已记录结束消息 · 待校验封装" : "未记录结束消息 · 不能强行完成"
+            if failed { return "受信異常 · 完全とはマークできません" }
+            if sealed { return "パッケージ済み · 復元前に再検証が必要" }
+            if hasGaps { return "欠落あり · 元ファイル保持" }
+            return completionReported ? "終了メッセージ記録済み · 検証とパッケージ待ち" : "終了メッセージ未記録 · 強制完了はできません"
         }
     }
     struct Catalog { let entries: [Entry]; let unreadable: Int }

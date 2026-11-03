@@ -44,26 +44,26 @@ actor BookDiskStore {
         #if DEBUG
         guard allowsTestFixture, !busy else { return }
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("book-fixture-\(UUID().uuidString)")
-        let url = root.appendingPathComponent("匀速阅读验收样本.txt")
+        let url = root.appendingPathComponent("等速リーディング検証サンプル.txt")
         do {
             try FileManager.default.createDirectory(at: root, withIntermediateDirectories: false)
             defer { try? FileManager.default.removeItem(at: root) }
-            try Data(String(repeating: "这是匀速阅读的合成测试稿。拖动即暂停，播放会从当前位置继续。\n\n", count: 100).utf8).write(to: url, options: .withoutOverwriting)
+            try Data(String(repeating: "これは等速リーディングの合成テスト原稿です。ドラッグすると一時停止し、再生すると現在の位置から再開します。\n\n", count: 100).utf8).write(to: url, options: .withoutOverwriting)
             await importFile(url)
-        } catch { self.error = "合成测试书未导入。" }
+        } catch { self.error = "合成テスト本をインポートできませんでした。" }
         #endif
     }
     func load() async {
         guard !busy, !loaded else { return }
         busy = true; defer { busy = false }
         do { books = try await disk.load(); loaded = true }
-        catch { self.error = "书库读取失败；原文件保留，未重建或清空书库。" }
+        catch { self.error = "書庫の読み込みに失敗しました。元のファイルは保持し、書庫の再構築や消去はしていません。" }
     }
     func importFile(_ source: URL) async {
         guard !busy else { error = BookImportError.busy.localizedDescription; return }
         if !loaded { await load() }
         guard loaded, !busy else { return }
-        guard books.count < 50 else { error = "本地书库暂限 50 本。"; return }
+        guard books.count < 50 else { error = "ローカル書庫は当面 50 冊までです。"; return }
         busy = true; defer { busy = false }
         let access = source.startAccessingSecurityScopedResource()
         defer { if access { source.stopAccessingSecurityScopedResource() } }
@@ -71,14 +71,14 @@ actor BookDiskStore {
             let book = try await Task.detached(priority: .userInitiated) { try BookImporter.read(source) }.value
             try await disk.save(book)
             books.insert(book, at: 0)
-        } catch { self.error = (error as? BookImportError)?.localizedDescription ?? "书籍导入失败，请确认文件已经下载到本机。原文件未移动或修改。" }
+        } catch { self.error = (error as? BookImportError)?.localizedDescription ?? "本のインポートに失敗しました。ファイルがこのデバイスにダウンロード済みか確認してください。元のファイルは移動も変更もしていません。" }
     }
     func savePosition(id: UUID, chapter: Int, progress: Double, speed: Double) async {
         guard let index = books.firstIndex(where: { $0.id == id }), books[index].chapters.indices.contains(chapter),
               progress.isFinite, speed.isFinite else { return }
         books[index].chapter = chapter; books[index].progress = min(1, max(0, progress)); books[index].speed = min(80, max(8, speed))
         let book = books[index]
-        do { try await disk.save(book) } catch { self.error = "阅读位置未保存，请重试；书籍正文仍保留。" }
+        do { try await disk.save(book) } catch { self.error = "読書位置を保存できませんでした。再試行してください。本文は保持されています。" }
     }
 }
 

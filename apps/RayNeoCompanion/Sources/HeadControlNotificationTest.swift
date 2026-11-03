@@ -7,7 +7,7 @@ import RayNeoDisplay
 /// head gesture into an approval outside this test page.
 @MainActor
 final class HeadControlNotificationTest: ObservableObject {
-    @Published private(set) var status = "尚未发送测试卡"
+    @Published private(set) var status = "テストカードは未送信"
     @Published private(set) var lastDecision: String?
     @Published private(set) var error: String?
     @Published private(set) var pendingID: String?
@@ -43,14 +43,14 @@ final class HeadControlNotificationTest: ObservableObject {
 
     func send(title: String, source: String, content: String) {
         guard canSend, let connectedDevice = device() else {
-            error = "需要唯一已连接、空闲的眼镜；未发送测试卡。"
+            error = "接続済みで空いているグラスが1つだけ必要です。テストカードは送信していません。"
             return
         }
         let cleanTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
         let cleanSource = source.trimmingCharacters(in: .whitespacesAndNewlines)
         let cleanContent = content.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !cleanTitle.isEmpty, !cleanSource.isEmpty, !cleanContent.isEmpty else {
-            error = "标题、来源和内容都不能为空。"
+            error = "タイトル・出典・内容はいずれも空にできません。"
             return
         }
 
@@ -65,10 +65,10 @@ final class HeadControlNotificationTest: ObservableObject {
             expiresAt = now().addingTimeInterval(timeout)
             lastDecision = nil
             error = nil
-            status = "测试卡已发送；等待点头或摇头（(Int(timeout)) 秒）"
+            status = "テストカードを送信済み。うなずきか首振りを待っています（(Int(timeout)) 秒）"
             scheduleExpiry(for: id)
         } catch {
-            self.error = "测试卡未发送：\(error.localizedDescription)"
+            self.error = "テストカードは送信されませんでした：\(error.localizedDescription)"
         }
     }
 
@@ -78,15 +78,15 @@ final class HeadControlNotificationTest: ObservableObject {
         guard let id = pendingID else { return }
         do {
             try sendMessage(cardCodec.encodeAppRequest(.delete(suggestUID: id, suggestType: .todo)))
-            clearPending(status: "已请求移除测试卡", decision: nil)
+            clearPending(status: "テストカードの削除をリクエスト済み", decision: nil)
         } catch {
-            self.error = "无法移除测试卡：\(error.localizedDescription)"
+            self.error = "テストカードを削除できませんでした：\(error.localizedDescription)"
         }
     }
 
     func connectionChanged() {
         guard pendingID != nil else { return }
-        clearPending(status: "连接变化；已停止等待这张测试卡", decision: nil)
+        clearPending(status: "接続が変わりました。このテストカードの待機を停止しました", decision: nil)
     }
 
     func receive(device incomingDevice: String, wire: DeviceBusinessWire) {
@@ -96,12 +96,12 @@ final class HeadControlNotificationTest: ObservableObject {
             guard case let .operation(operation) = try operationCodec.decodeGlassesOperation(type: 34, payload: payload),
                   operation.suggestUID == id, operation.suggestType == SuggestionCardCategory.todo.rawValue else { return }
             switch operation.command {
-            case .accept: complete(id: id, decision: "已收到点头确认（仅测试回调）")
-            case .reject: complete(id: id, decision: "已收到摇头取消（仅测试回调）")
+            case .accept: complete(id: id, decision: "うなずきによる確認を受信（テスト用コールバックのみ）")
+            case .reject: complete(id: id, decision: "首振りによるキャンセルを受信（テスト用コールバックのみ）")
             case .unknown: return
             }
         } catch {
-            self.error = "忽略不匹配的头控回传。"
+            self.error = "一致しないヘッドコントロールの応答を無視しました。"
         }
     }
 
@@ -115,7 +115,7 @@ final class HeadControlNotificationTest: ObservableObject {
                 suggestUID: id, suggestType: SuggestionCardCategory.todo.rawValue, code: .success))
             error = nil
         } catch {
-            self.error = "已记录头控结果，但清理/回执未发送：\(error.localizedDescription)"
+            self.error = "ヘッドコントロールの結果は記録しましたが、クリーンアップ/応答は送信されませんでした：\(error.localizedDescription)"
         }
     }
 
@@ -133,8 +133,8 @@ final class HeadControlNotificationTest: ObservableObject {
     private func expire(id: String) {
         guard pendingID == id else { return }
         do { try sendMessage(cardCodec.encodeAppRequest(.delete(suggestUID: id, suggestType: .todo))) }
-        catch let caught { self.error = "测试已超时，但移除请求未发送：\(caught.localizedDescription)" }
-        clearPending(status: "测试已超时；不执行任何操作", decision: nil)
+        catch let caught { self.error = "テストはタイムアウトしましたが、削除リクエストは送信されませんでした：\(caught.localizedDescription)" }
+        clearPending(status: "テストはタイムアウトしました。操作は実行しません", decision: nil)
     }
 
     private func clearPending(status: String, decision: String?) {
@@ -154,25 +154,25 @@ final class HeadControlNotificationTest: ObservableObject {
 
 struct HeadControlNotificationTestView: View {
     @EnvironmentObject private var test: HeadControlNotificationTest
-    @State private var title = "头控测试"
+    @State private var title = "ヘッドコントロールテスト"
     @State private var source = "Turbo IO"
-    @State private var content = "点头确认，摇头取消。"
+    @State private var content = "うなずいて確認、首を振ってキャンセル。"
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
                 Card {
-                    Label("本机头控测试", systemImage: "person.crop.circle.badge.checkmark")
+                    Label("本機ヘッドコントロールテスト", systemImage: "person.crop.circle.badge.checkmark")
                         .font(.headline)
-                    Text("仅发送一张待办建议卡。点头/摇头只在本页显示结果，绝不会调用网络、Core 或自动化。")
+                    Text("ToDo の提案カードを1枚だけ送信します。うなずき/首振りの結果はこのページにだけ表示され、ネットワーク・Core・自動化を呼ぶことは決してありません。")
                         .font(.caption).foregroundStyle(Palette.muted)
-                    TextField("标题", text: $title).textInputAutocapitalization(.never)
-                    TextField("来源", text: $source).textInputAutocapitalization(.never)
+                    TextField("タイトル", text: $title).textInputAutocapitalization(.never)
+                    TextField("出典", text: $source).textInputAutocapitalization(.never)
                     TextField("内容", text: $content, axis: .vertical).lineLimit(2...4)
-                    Button("发送 30 秒头控测试卡") { test.send(title: title, source: source, content: content) }
+                    Button("30秒のヘッドコントロールテストカードを送信") { test.send(title: title, source: source, content: content) }
                         .disabled(!test.canSend).accessibilityIdentifier("head-control-test-send")
                     if test.hasPendingCard {
-                        Button("立即移除测试卡", role: .destructive) { test.cancel() }
+                        Button("テストカードを今すぐ削除", role: .destructive) { test.cancel() }
                             .accessibilityIdentifier("head-control-test-cancel")
                     }
                 }
@@ -180,13 +180,13 @@ struct HeadControlNotificationTestView: View {
                     Text(test.status).font(.subheadline).accessibilityIdentifier("head-control-test-status")
                     if let decision = test.lastDecision { Text(decision).font(.caption).foregroundStyle(Palette.green) }
                     if let error = test.error { Text(error).font(.caption).foregroundStyle(.red) }
-                    Text("协议范围：业务 21；下发 type 33，匹配 type 34 回传后删除并发送 type 35 回执。未验证的回传会被忽略。")
+                    Text("プロトコル範囲：業務 21。送信は type 33、一致する type 34 の応答後に削除し type 35 の応答を送信。未検証の応答は無視されます。")
                         .font(.caption2).foregroundStyle(Palette.muted)
                 }
             }.padding(22)
         }
         .background(Palette.background)
-        .navigationTitle("头控通知测试")
+        .navigationTitle("ヘッドコントロール通知テスト")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.visible, for: .navigationBar)
         .preference(key: CompanionTabBarHiddenPreference.self, value: true)

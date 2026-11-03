@@ -30,18 +30,18 @@ struct LocalRecording: Identifiable, Codable {
 struct ModelConfiguration: Codable, Equatable {
     var endpoint = ""
     var model = ""
-    var recognition = "待实测决定"
-    var speech = "待接入"
+    var recognition = "実測後に決定"
+    var speech = "接続待ち"
 }
 
 enum ConfigurationError: LocalizedError {
     case invalidEndpoint, embeddedCredentials, missingEndpointForCredential, keychain(Int32)
     var errorDescription: String? {
         switch self {
-        case .invalidEndpoint: return "请输入有效的 HTTPS 服务地址；留空可仅保存草稿。"
-        case .embeddedCredentials: return "地址中不能包含账号、密码、查询参数或片段；密钥请填写到独立输入框。"
-        case .missingEndpointForCredential: return "保存密钥前请先填写 HTTPS 地址；密钥必须绑定到具体服务。"
-        case .keychain: return "无法安全保存密钥，请检查设备解锁状态后重试。"
+        case .invalidEndpoint: return "有効な HTTPS サービスアドレスを入力してください。空欄の場合は下書きとして保存だけできます。"
+        case .embeddedCredentials: return "アドレスにアカウント、パスワード、クエリパラメータ、フラグメントを含めることはできません。キーは専用の入力欄に入力してください。"
+        case .missingEndpointForCredential: return "キーを保存する前に HTTPS アドレスを入力してください。キーは具体的なサービスに紐付ける必要があります。"
+        case .keychain: return "キーを安全に保存できません。デバイスのロック解除状態を確認して再試行してください。"
         }
     }
 }
@@ -206,7 +206,7 @@ final class CompanionStore: ObservableObject {
                                   allowsArchiveTestFixture: arguments.contains("--ui-archive-fixture"), allowsBookTestFixture: arguments.contains("--ui-book-fixture"))
             #if !COMPANION_DEVICE
             if arguments.contains("--ui-todo-conflict-fixture"), store.todos.isEmpty {
-                store.addTodo("合成冲突样本 · 非眼镜数据")
+                store.addTodo("合成コンフリクトサンプル · グラスのデータではありません")
                 let id = store.todos[0].id
                 let wire = store.assignWireID(id, device: "synthetic-ui-device")
                 store.toggleTodo(id)

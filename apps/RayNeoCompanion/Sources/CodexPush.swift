@@ -16,7 +16,7 @@ struct CodexPushEvent: Decodable, Identifiable {
 /// Automatic delivery while iOS lets the app run. Not an APNs wakeup service.
 @MainActor final class CodexPush: ObservableObject {
     @Published private(set) var enabled: Bool
-    @Published private(set) var status = "主动提醒未开启"
+    @Published private(set) var status = "プッシュ通知はオフ"
     @Published private(set) var pendingCount = 0
     private let codex: CodexCompanion
     private let defaults: UserDefaults
@@ -38,13 +38,13 @@ struct CodexPushEvent: Decodable, Identifiable {
         since = defaults.double(forKey: prefix + "since")
         observedEndpoint = defaults.string(forKey: prefix + "endpoint") ?? ""
         attempted = Array((defaults.stringArray(forKey: prefix + "attempted") ?? []).suffix(512))
-        if enabled { status = "等待连接；仅提醒开启之后的新事件" }
+        if enabled { status = "接続待ち。オンにした後の新しいイベントのみ通知します" }
     }
     func setEnabled(_ value: Bool) {
         enabled = value; defaults.set(value, forKey: prefix + "enabled")
         pendingCount = 0
-        if value { resetBaseline(); status = "已开启；等待新任务事件，眼镜通知总开关需允许" }
-        else { status = "主动提醒已关闭；不停止 Codex 任务" }
+        if value { resetBaseline(); status = "オンにしました。新しいタスクイベントを待機中。グラスの通知マスター設定で許可が必要です" }
+        else { status = "プッシュ通知はオフ。Codex タスクは停止しません" }
     }
     private func resetBaseline() {
         since = now(); observedEndpoint = codex.endpoint; attempted = []; nextDelivery = 0
@@ -59,9 +59,9 @@ struct CodexPushEvent: Decodable, Identifiable {
         let endpoint = codex.endpoint
         await codex.refresh()
         guard enabled, endpoint == codex.endpoint, let state = codex.state, state.online else {
-            status = "桥接离线；没有发送或虚构任务结果"; return
+            status = "ブリッジがオフラインです。タスク結果を送信したり偽ったりはしていません"; return
         }
-        guard let events = state.events else { status = "桥接尚未支持事件提醒，请升级电脑桥接"; return }
+        guard let events = state.events else { status = "ブリッジがまだイベント通知に未対応です。PC 側ブリッジをアップグレードしてください"; return }
         let time = now()
         let candidates = events.filter { event in
             guard event.createdAt.isFinite, event.expiresAt.isFinite, event.createdAt >= since,
@@ -77,7 +77,7 @@ struct CodexPushEvent: Decodable, Identifiable {
         pendingCount = candidates.count
         guard let event = candidates.first else { return }
         guard canDeliver(), time >= nextDelivery else {
-            status = "\(pendingCount) 条待提醒；等待眼镜空闲、连接及通知许可"; return
+            status = "\(pendingCount) 件の通知待ち。グラスの空き、接続、通知許可を待っています"; return
         }
         // Persist before transport: never auto-repeat an uncertain hardware send.
         attempted.append(event.id); attempted = Array(attempted.suffix(512))
@@ -85,7 +85,7 @@ struct CodexPushEvent: Decodable, Identifiable {
         nextDelivery = time + 8000
         let uid = deliver(event.title, event.content)
         pendingCount -= 1
-        status = uid.map { "已提交眼镜通知 UID \($0)；实际显示请看通知状态与镜片" }
-            ?? "通知提交失败或结果未知；不自动重发，请在控制台查看结果"
+        status = uid.map { "グラス通知 UID \($0) を送信しました。実際の表示は通知ステータスとレンズで確認してください" }
+            ?? "通知の送信に失敗したか結果が不明です。自動再送はしません。コンソールで結果を確認してください"
     }
 }

@@ -5,19 +5,19 @@ import RayNeoProtocol
 import UIKit
 
 @MainActor final class CompanionDeviceFeatures: ObservableObject {
-    @Published private(set) var status = "连接后可使用眼镜功能；未自动开始采音"
-    @Published private(set) var recordingStatus = "未启用眼镜录音接收"
+    @Published private(set) var status = "接続後にグラス機能が使えます。自動では録音を開始しません"
+    @Published private(set) var recordingStatus = "グラス録音の受信は未有効"
     @Published private(set) var recordingID: String?
     @Published private(set) var recordingBytes = 0
     @Published private(set) var acceptsEyeRecording = false
-    @Published private(set) var todoStatus = "尚未同步"
+    @Published private(set) var todoStatus = "未同期"
     @Published private(set) var battery: Int?
     @Published private(set) var brightness: Int?
     @Published private(set) var settings: [String: Any] = [:]
     @Published private(set) var completedRecording: URL?
     @Published private(set) var recoveryEntries: [GlassesRecordingInbox.Entry] = []
     @Published private(set) var recoveryBusy = false
-    @Published private(set) var recoveryStatus = "仅扫描本机，不访问眼镜。"
+    @Published private(set) var recoveryStatus = "この端末だけをスキャンし、グラスにはアクセスしません。"
     @Published var error: String?
     let voice: CompanionVoiceRuntime
     private weak var store: CompanionStore?
@@ -45,10 +45,10 @@ import UIKit
             self.store?.headControlTest.connectionChanged()
             self.store?.alwaysOn.connectionChanged()
             self.pendingSettings.removeAll(); self.settings = [:]; self.battery = nil; self.brightness = nil
-            if self.recordingID != nil { self.recordingStatus = device == self.captureDevice ? "连接恢复；等待同一录音状态/数据，不自动宣布补传完成" : "连接中断；原始录音保留，等待同一眼镜恢复" }
+            if self.recordingID != nil { self.recordingStatus = device == self.captureDevice ? "接続が復旧しました。同じ録音の状態／データを待機中です。再送完了とは自動で判定しません" : "接続が切断されました。元の録音は保持し、同じグラスの復旧を待っています" }
             if self.teleprompterID != nil, device != self.teleprompterDevice {
                 self.teleprompterPrepared = false
-                self.teleprompterStatus = "提词连接中断；停止自动操作，请恢复连接后退出并重新准备"
+                self.teleprompterStatus = "プロンプターの接続が切断されました。自動操作を停止します。接続を復旧してから終了し、再準備してください"
             }
         }
         for (name, foreground) in [(UIApplication.didEnterBackgroundNotification,false),(UIApplication.didBecomeActiveNotification,true)] {
@@ -67,12 +67,12 @@ import UIKit
         try voice.sendBusiness(business, payload: DeviceBusinessWire.encode(type: type, json: json))
     }
     func perform(_ body: () throws -> Void) {
-        do { try body(); error = nil } catch { self.error = (error as? LocalizedError)?.errorDescription ?? "操作失败；未确认眼镜完成。" }
+        do { try body(); error = nil } catch { self.error = (error as? LocalizedError)?.errorDescription ?? "操作に失敗しました。グラスの完了は未確認です。" }
     }
     func enableEyeRecording(_ enabled: Bool) {
-        guard recordingID == nil else { error = "请先停止录音并等待文件接收结束。"; return }
+        guard recordingID == nil else { error = "まず録音を停止し、ファイル受信の終了をお待ちください。"; return }
         acceptsEyeRecording = enabled
-        recordingStatus = enabled ? "已允许接收：请在眼镜开始录音；只保存在本机" : "未启用眼镜录音接收"
+        recordingStatus = enabled ? "受信を許可しました。グラスで録音を開始してください。この端末にのみ保存します" : "グラス録音の受信は未有効"
     }
     func startRecording() {
         perform {
@@ -82,7 +82,7 @@ import UIKit
             acceptsEyeRecording = true
             let id = UUID().uuidString
             captureDevice = device; recordingID = id; recordingBytes = 0; completedRecording = nil; recordTimeRaw = nil
-            recordingStatus = "准备本机接收目录"
+            recordingStatus = "この端末の受信フォルダを準備中"
             io.async { [weak self, inbox] in
                 do {
                     try inbox.begin(device: device, id: id)
@@ -91,10 +91,10 @@ import UIKit
                         self.perform {
                             try self.send(14,14,["isAppForeground": true])
                             try self.send(14,1,["uuid":id,"action":1,"code":1])
-                            self.recordingStatus = "已请求开始，等待眼镜回应"
+                            self.recordingStatus = "開始をリクエストしました。グラスの応答を待っています"
                         }
                     }
-                } catch { DispatchQueue.main.async { self?.error = "接收目录创建失败，未请求眼镜录音。"; self?.recordingID = nil } }
+                } catch { DispatchQueue.main.async { self?.error = "受信フォルダの作成に失敗したため、グラス録音はリクエストしていません。"; self?.recordingID = nil } }
             }
         }
     }
@@ -105,7 +105,7 @@ import UIKit
             // Preserve a reported raw time; never invent an epoch/elapsed-time conversion.
             if type == 9, let time = recordTimeRaw { body["time"] = time }
             try send(14,type,body)
-            recordingStatus = type == 4 ? "已请求停止，仍等待尾部音频和完成消息" : "控制已提交，等待眼镜回应"
+            recordingStatus = type == 4 ? "停止をリクエストしました。末尾の音声と完了メッセージを待っています" : "コントロールを送信しました。グラスの応答を待っています"
         }
     }
     func receive(device: String, business: UInt8, data: Data) {
@@ -126,16 +126,16 @@ import UIKit
             default: break
             }
         } catch {
-            self.error = "收到未识别或不匹配的业务数据，未当成成功。"
+            self.error = "未識別または不一致の業務データを受信しました。成功とは扱っていません。"
             if business == 14 { lostMessages() }
         }
     }
     private func recording(_ device: String, _ wire: DeviceBusinessWire) throws {
         let j = wire.json, type = wire.type
-        if type == 12 { recordingStatus = "收到同步列表；本版不自动导入或清理离线积压"; return }
+        if type == 12 { recordingStatus = "同期リストを受信しました。このバージョンではオフラインの滞留分を自動インポート／削除しません"; return }
         guard let id = DeviceBusinessWire.identifier(j,"uuid") else { return }
         if type == 3, finishing.contains(id), recordingID != id, captureDevice == device {
-            error = "已封装录音仍收到迟到数据；请保留副本并复核，不能承诺完整。"
+            error = "パッケージ済みの録音に対して遅延データが届きました。コピーを保持して再確認してください。完全性は保証できません。"
             io.async { [inbox] in inbox.invalidate(device:device,id:id) }
             return
         }
@@ -149,17 +149,17 @@ import UIKit
                     try inbox.begin(device: device,id: id)
                     DispatchQueue.main.async {
                         guard let self, self.recordingID == id, self.voice.deviceID == device else { return }
-                        self.perform { try self.send(14,1,["uuid":id,"action":2,"code":1]); self.recordingStatus = "已接受眼镜录音，等待数据" }
+                        self.perform { try self.send(14,1,["uuid":id,"action":2,"code":1]); self.recordingStatus = "グラス録音を受け付けました。データを待っています" }
                     }
-                } catch { DispatchQueue.main.async { self?.error = "无法准备眼镜录音的本机存储。" } }
+                } catch { DispatchQueue.main.async { self?.error = "グラス録音用の端末内ストレージを準備できません。" } }
             }
             return
         }
         guard recordingID == id, captureDevice == device else { return }
         if let time = DeviceBusinessWire.integer(j,"time") { recordTimeRaw = time }
         if type == 1, action == 2 {
-            if code == 1 { recordingStatus = "眼镜已确认开始录音" }
-            else { recordingStatus = "眼镜拒绝开始，code=\(code ?? -1)；未自动绕过隐私/冲突"; recordingID = nil }
+            if code == 1 { recordingStatus = "グラスが録音開始を確認しました" }
+            else { recordingStatus = "グラスが開始を拒否しました。code=\(code ?? -1)。プライバシー／競合を自動では回避しません"; recordingID = nil }
         } else if type == 3 {
             guard let offset = DeviceBusinessWire.integer(j,"offset"), offset >= 0,
                   offset <= GlassesRecordingInbox.limit, !wire.bytes.isEmpty else { throw DeviceFeatureError.invalidPacket }
@@ -167,8 +167,8 @@ import UIKit
             io.async { [weak self, inbox, writeSlots] in
                 defer { writeSlots.signal() }
                 do { let count = try inbox.append(device:device,id:id,offset:Int(offset),data:wire.bytes)
-                    DispatchQueue.main.async { self?.recordingBytes = count; self?.recordingStatus = "正在接收并保存原始音频" }
-                } catch { inbox.invalidate(device:device,id:id); DispatchQueue.main.async { self?.error = "音频写入或完整性检查失败；原件保留，不能标完整。" } }
+                    DispatchQueue.main.async { self?.recordingBytes = count; self?.recordingStatus = "元の音声を受信して保存中" }
+                } catch { inbox.invalidate(device:device,id:id); DispatchQueue.main.async { self?.error = "音声の書き込みまたは完全性チェックに失敗しました。元のファイルは保持しますが、完全とは表示しません。" } }
             }
         } else if type == 6, DeviceBusinessWire.boolean(j,"completed") == true, !finishing.contains(id) {
             // Persist the observed completion before queued finalization, so a restart cannot invent or lose it.
@@ -176,20 +176,20 @@ import UIKit
                 do { try inbox.recordCompletion(device:device,id:id) }
                 catch { inbox.invalidate(device:device,id:id) }
             }
-            finishing.insert(id); recordingStatus = "眼镜已报告完成，核对接收覆盖并封装"
+            finishing.insert(id); recordingStatus = "グラスが完了を報告しました。受信範囲を確認してパッケージ中"
             // Small grace for callbacks delivered after completion. Late data is never silently merged into a published file.
             DispatchQueue.main.asyncAfter(deadline: .now()+1) { [weak self] in self?.finishRecording(device:device,id:id) }
         } else if type == 4 {
             if action == 1 { try send(14,4,["uuid":id,"action":2,"code":code ?? 1]) }
-            recordingStatus = "停止事件已收到，等待音频完成"
+            recordingStatus = "停止イベントを受信しました。音声の完了を待っています"
         } else if type == 11 {
             if action == 1 { try send(14,11,["uuid":id,"action":2,"code":1]) }
             let time = DeviceBusinessWire.integer(j,"time") ?? 0
             io.async { [inbox] in try? inbox.mark(device:device,id:id,time:time) }
         } else if type == 8 || type == 9 {
             if action == 1 { try send(14,type,["uuid":id,"action":2,"code":1]) }
-            recordingStatus = code == 1 ? (type == 8 ? "眼镜已暂停" : "眼镜已恢复") : "控制回应 code=\(code ?? -1)"
-        } else if type == 5 { recordingStatus = "收到同一录音重连状态；继续按 offset 校验" }
+            recordingStatus = code == 1 ? (type == 8 ? "グラスが一時停止しました" : "グラスが再開しました") : "コントロール応答 code=\(code ?? -1)"
+        } else if type == 5 { recordingStatus = "同じ録音の再接続状態を受信しました。offsetで検証を続けます" }
     }
     private func finishRecording(device: String, id: String) {
         guard !finalizationInFlight else { return }
@@ -202,39 +202,39 @@ import UIKit
                     guard let self else { return }
                     self.finalizationInFlight = false
                     self.completedRecording = output; self.recordingID = nil
-                    self.recordingStatus = "接收覆盖和逐包解码通过；WAV 待归档，原始音频/Ogg 保留。不代表无线原音无损。"
+                    self.recordingStatus = "受信範囲とパケット毎のデコードに合格しました。WAVはアーカイブ待ちです。元の音声／Oggは保持します。無線の原音が無損失であることを意味しません。"
                     // Archive copy + checksum, not ASR or upload. Ogg structure is not proof of acoustic completeness.
                     Task { await self.archiveReceivedRecording() }
                 }
             } catch {
-                DispatchQueue.main.async { self?.finalizationInFlight = false; self?.recordingStatus = "未能完成封装；原始字节和覆盖记录已保留"; self?.error = "录音未通过完整性检查，不标为完整音频。" }
+                DispatchQueue.main.async { self?.finalizationInFlight = false; self?.recordingStatus = "パッケージを完了できませんでした。元のバイトと受信範囲の記録は保持しています"; self?.error = "録音が完全性チェックに合格しなかったため、完全な音声とは表示しません。" }
             }
         }
     }
     private func lostMessages() {
         store?.notifications.lostMessages()
         if let id = recordingID, let device = captureDevice, failedRecordings.insert(id).inserted { io.async { [inbox] in inbox.invalidate(device:device,id:id) } }
-        error = "业务接收队列溢出或录音格式不匹配；本次录音不可标完整。"
+        error = "業務受信キューが溢れたか、録音形式が一致しません。今回の録音は完全とは表示できません。"
     }
     func archiveReceivedRecording() async {
         guard let file = completedRecording, let store else { return }
-        let imported = await store.archive.importFile(file,title:"眼镜录音 " + Date().formatted(date:.abbreviated,time:.shortened))
-        recordingStatus = imported ? "WAV 已校验归档；原始音频/Ogg 保留，未转写或上传" : "WAV 已保存，但归档未成功；可重试归档或分享文件"
+        let imported = await store.archive.importFile(file,title:"グラス録音 " + Date().formatted(date:.abbreviated,time:.shortened))
+        recordingStatus = imported ? "WAVを検証してアーカイブしました。元の音声／Oggは保持し、文字起こしやアップロードはしていません" : "WAVは保存しましたが、アーカイブに失敗しました。アーカイブの再試行かファイル共有ができます"
     }
     func retryRecordingFinish() {
-        guard let id = recordingID, let device = captureDevice, finishing.contains(id) else { error = "尚未收到眼镜完成消息，不能强行当作完成。"; return }
+        guard let id = recordingID, let device = captureDevice, finishing.contains(id) else { error = "グラスの完了メッセージをまだ受け取っていないため、完了として扱うことはできません。"; return }
         finishRecording(device:device,id:id)
     }
     func loadRecoveryEntries() async {
-        guard !recoveryBusy, recordingID == nil, !finalizationInFlight else { recoveryStatus = "当前有接收任务，请结束后再扫描。"; return }
+        guard !recoveryBusy, recordingID == nil, !finalizationInFlight else { recoveryStatus = "受信タスクがあります。終了してからスキャンしてください。"; return }
         recoveryBusy = true; defer { recoveryBusy = false }
         do {
             let catalog: GlassesRecordingInbox.Catalog = try await withCheckedThrowingContinuation { continuation in
                 io.async { [inbox] in continuation.resume(with:Result { try inbox.catalog() }) }
             }
             recoveryEntries = catalog.entries
-            recoveryStatus = "本机 \(catalog.entries.count) 条；\(catalog.unreadable) 个无法读取的目录保留原位。扫描不等于完整性通过。"
-        } catch { recoveryStatus = "本机接收目录无法读取；未清空、重建或删除。" }
+            recoveryStatus = "この端末に \(catalog.entries.count) 件。読み取れないフォルダ \(catalog.unreadable) 件はそのまま保持しています。スキャンは完全性の合格を意味しません。"
+        } catch { recoveryStatus = "この端末の受信フォルダを読み取れません。消去・再作成・削除はしていません。" }
     }
     func recoverRecording(_ entryID: String) async {
         guard !recoveryBusy, recordingID == nil, !finalizationInFlight else { return }
@@ -244,9 +244,9 @@ import UIKit
                 io.async { [inbox] in continuation.resume(with:Result { try inbox.recoverDecoded(entryID) }) }
             }
             guard let store else { return }
-            let imported = await store.archive.importFile(file,title:"恢复的眼镜录音")
-            recoveryStatus = imported ? "已重新核对、解码并归档；未转写、上传或删除原件。" : "WAV 已恢复，归档暂未成功；原始文件保留，可重试。"
-        } catch { recoveryStatus = "未通过恢复校验或本构建不支持解码；原件保留，不能标完整。" }
+            let imported = await store.archive.importFile(file,title:"復旧したグラス録音")
+            recoveryStatus = imported ? "再確認・デコードしてアーカイブしました。文字起こし・アップロード・元ファイルの削除はしていません。" : "WAVは復旧しましたが、アーカイブはまだ成功していません。元のファイルは保持し、再試行できます。"
+        } catch { recoveryStatus = "復旧チェックに合格しないか、このビルドがデコードに対応していません。元ファイルは保持しますが、完全とは表示しません。" }
     }
     func recoveryRawFile(_ entryID: String) async -> URL? {
         guard !recoveryBusy, recordingID == nil, !finalizationInFlight else { return nil }
@@ -256,7 +256,7 @@ import UIKit
                 io.async { [inbox] in continuation.resume(with:Result { try inbox.exportRawCopy(entryID) }) }
             }
             return url
-        } catch { recoveryStatus = "原始文件不可读取，未生成分享入口。"; return nil }
+        } catch { recoveryStatus = "元のファイルを読み取れないため、共有入口は作成していません。"; return nil }
     }
     func syncTodos(pendingOnly: Bool = false) {
         perform {
@@ -264,7 +264,7 @@ import UIKit
             let rows = try store.todoCandidates(device: device, pendingOnly: pendingOnly)
             guard rows.count <= 100 else { throw DeviceFeatureError.storageLimit }
             for row in rows { try sendTodo(row, device:device) }
-            todoStatus = "已提交 \(rows.count) 条待办；等待眼镜状态/操作回执，不代表镜片已显示"
+            todoStatus = "ToDo \(rows.count) 件を送信しました。グラスの状態／操作の受領を待っています。レンズに表示されたことを意味しません"
         }
     }
     func localTodoChanged(_ row: LocalTodo) {
@@ -283,7 +283,7 @@ import UIKit
         store.markTodoSubmitted(row.id, device: device, revision: revision)
     }
     private func todo(_ device: String, _ wire: DeviceBusinessWire) throws {
-        if wire.type == 14 { todoStatus = "眼镜操作回执：成功 \(DeviceBusinessWire.integer(wire.json,"successCount") ?? 0)；不作为逐项镜片验收"; return }
+        if wire.type == 14 { todoStatus = "グラス操作の受領：成功 \(DeviceBusinessWire.integer(wire.json,"successCount") ?? 0)。項目毎のレンズ確認としては扱いません"; return }
         guard wire.type == 4 || wire.type == 10 else { return }
         let data = try JSONSerialization.data(withJSONObject:wire.json)
         let message = try TodoJSONCodec().decodeGlassesMessage(type:UInt16(wire.type),payload:data)
@@ -294,13 +294,13 @@ import UIKit
             for entry in b.eventList.value ?? [] { if case .todo(let s) = entry { changes += store?.applyGlassesTodo(device:device,id:s.eventID,status:s.statusRaw,important:s.isImportant.value) == true ? 1 : 0 } }
         default: break
         }
-        todoStatus = "眼镜状态已应用 \(changes) 项；离线修改冲突请查看待发送列表，未知 ID 不导入"
+        todoStatus = "グラスの状態を \(changes) 件適用しました。オフライン変更の競合は送信待ちリストを確認してください。不明なIDはインポートしません"
     }
     func refreshSettings() {
         perform {
             try voice.sendBusiness(15,payload:LauncherControlPrototype.encode(.requestGeneralStatus))
             try send(15,4,["cmd":"request_general_settings","payload":["value":0,"mode":0,"data":""]])
-            status = "已查询，等待眼镜状态"
+            status = "照会しました。グラスの状態を待っています"
         }
     }
     func setBrightness(_ value: Int) { command(type:2,cmd:"brightness_change",value:value,allowed:7...8) }
@@ -310,14 +310,14 @@ import UIKit
     func setSleep(_ seconds: Int) { guard [15,25].contains(seconds) else { return }; command(type:5,cmd:"auto_lock_time",value:seconds) }
     func setDoubleTapTodo(_ todo: Bool) {
         guard let crown = settings["crownConfig"] as? [String:Any] ?? settings["crown_config"] as? [String:Any],
-              let long = DeviceBusinessWire.integer(crown,"longPress") else { error = "请先读取完整旋钮设置，避免覆盖原长按配置。"; return }
+              let long = DeviceBusinessWire.integer(crown,"longPress") else { error = "元の長押し設定を上書きしないよう、まずノブ設定をすべて読み取ってください。"; return }
         perform { let body = try JSONSerialization.data(withJSONObject:["double":todo ? 8:0,"longPress":long]); try submitCommand(type:5,cmd:"crown_config",value:0,mode:0,data:String(decoding:body,as:UTF8.self)) }
     }
     func setDisplay(height: Int? = nil, distance: Int? = nil) {
         guard let config = settings["displayConfig"] as? [String:Any] ?? settings["display_config"] as? [String:Any],
               let oldHeight = DeviceBusinessWire.integer(config,"height"), let oldDistance = DeviceBusinessWire.integer(config,"distance"),
               height == nil || [1,3,5].contains(height!), distance == nil || [1,2].contains(distance!) else {
-            error = "请先读取显示配置；只支持已有证据的档位，未覆盖其他参数。"; return
+            error = "まず表示設定を読み取ってください。根拠のある段階のみ対応し、他のパラメータは上書きしません。"; return
         }
         perform {
             let data = try JSONSerialization.data(withJSONObject:["height":height.map(Int64.init) ?? oldHeight,"distance":distance.map(Int64.init) ?? oldDistance])
@@ -340,7 +340,7 @@ import UIKit
             let update = SelectedCityWeatherRawUpdate(items:[CityWeatherRawItem(location:location,locationID:"companion-custom",temperatureRaw:Int64(temperature),iconRaw:Int64(icon),descriptionRaw:description,temperatureRangeRaw:"",hourly:[])],timestampRaw:String(Int64(Date().timeIntervalSince1970)))
             let msg = try current ? WeatherJSONCodec().encodeCurrentWeatherUpdate(CurrentWeatherRawUpdate(location:location,temperatureRaw:Int64(temperature),iconRaw:Int64(icon),timestampRaw:update.timestampRaw)) : CityWeatherJSONCodec().encodeUpdate(update)
             try voice.sendBusiness(15,payload:DeviceBusinessWire.encode(type:UInt32(msg.type),json:JSONSerialization.jsonObject(with:msg.payload) as! [String:Any]))
-            pendingSettings[current ? "current_weather_update" : "weather_update"] = Date(); status = "自定义天气数据已提交；不更改看板组件布局，等待回执"
+            pendingSettings[current ? "current_weather_update" : "weather_update"] = Date(); status = "カスタム天気データを送信しました。ダッシュボード部品のレイアウトは変更せず、受領を待っています"
     }
     private func command(type: UInt32, cmd: String, value: Int, mode: Int = 0, allowed: ClosedRange<Int>? = nil) {
         perform { if let allowed, !allowed.contains(value) { throw DeviceFeatureError.invalidPacket }; try submitCommand(type:type,cmd:cmd,value:value,mode:mode,data:"") }
@@ -349,7 +349,7 @@ import UIKit
         guard canControl else { throw DeviceFeatureError.busy }
         if let since = pendingSettings[cmd], Date().timeIntervalSince(since) < 8 { throw DeviceFeatureError.busy }
         try send(15,type,["cmd":cmd,"payload":["value":value,"mode":mode,"data":data]])
-        pendingSettings[cmd] = Date(); status = "设置已提交，等待眼镜回报；不提前改显示值"
+        pendingSettings[cmd] = Date(); status = "設定を送信しました。グラスの報告を待っています。表示値は先行して変更しません"
     }
     private func launcher(_ wire: DeviceBusinessWire) {
         let j = wire.json
@@ -358,7 +358,7 @@ import UIKit
             if let n = DeviceBusinessWire.integer(state,"battery") { battery = Int(n) }
             if let n = DeviceBusinessWire.integer(state,"brightness") { brightness = Int(n) }
         }
-        if wire.type == 4 { settings = j["generalSettings"] as? [String:Any] ?? j; status = "眼镜通用设置已收到" }
+        if wire.type == 4 { settings = j["generalSettings"] as? [String:Any] ?? j; status = "グラスの共通設定を受信しました" }
         guard let cmd = j["cmd"] as? String, let p = j["payload"] as? [String:Any] else { return }
         if wire.type == 3, cmd == "brightness_change", let n = DeviceBusinessWire.integer(p,"value") { brightness = Int(n) }
         if [3,6,17,19].contains(wire.type) {
@@ -368,12 +368,12 @@ import UIKit
                 settings[key] = config
             }
             pendingSettings.removeValue(forKey:cmd)
-            status = "眼镜回报 \(cmd.prefix(45))：\(DeviceBusinessWire.integer(p,"value") ?? -1)（未验证镜片效果）"
+            status = "グラス報告 \(cmd.prefix(45))：\(DeviceBusinessWire.integer(p,"value") ?? -1)（レンズ効果は未検証）"
         }
     }
 
     // Teleprompter state/transport is implemented in the dedicated extension below.
-    @Published private(set) var teleprompterStatus = "尚未发送稿件"
+    @Published private(set) var teleprompterStatus = "原稿はまだ送信していません"
     @Published private(set) var teleprompterID: String?
     @Published private(set) var teleprompterOffset: Int64 = 0
     var teleprompterFile: URL?
@@ -400,10 +400,10 @@ extension CompanionDeviceFeatures {
             teleprompterOffset = 0; teleprompterPrepared = false; teleprompterSentFile = false
             // Optional layout fields intentionally omitted: never guess pixel/gear defaults.
             try send(20,2,["action":1,"did":did,"total":text.utf8.count,"scroll":2,"speed":speed,"pageOffset":0,"highLightOffset":0])
-            teleprompterStatus = "已请求准备稿件，等待眼镜回应；本次不启用跟读/麦克风"
+            teleprompterStatus = "原稿の準備をリクエストしました。グラスの応答を待っています。今回は追従読み上げ／マイクは有効化しません"
             DispatchQueue.main.asyncAfter(deadline:.now()+30) { [weak self] in
                 guard let self, self.teleprompterID == did, !self.teleprompterPrepared else { return }
-                self.teleprompterStatus = "准备超时；未确认收稿，不会自动开始滚动。可点退出取消本轮。"
+                self.teleprompterStatus = "準備がタイムアウトしました。受領は未確認で、自動ではスクロールを開始しません。終了をタップして今回分をキャンセルできます。"
             }
         }
     }
@@ -417,37 +417,37 @@ extension CompanionDeviceFeatures {
             if type == 7 { guard (60...240).contains(speed) else { throw DeviceFeatureError.invalidPacket }; body["scroll"] = 2; body["speed"] = speed }
             try send(20,type,body)
             if type == 6, let task = teleprompterTransferTask { voice.cancelFile(task); teleprompterTransferTask = nil }
-            teleprompterStatus = "控制 type\(type) 已提交，等待眼镜回应"
+            teleprompterStatus = "コントロール type\(type) を送信しました。グラスの応答を待っています"
         }
     }
     private func teleprompterReceive(_ device: String, _ wire: DeviceBusinessWire) throws {
         guard let did = DeviceBusinessWire.identifier(wire.json,"did"), did == teleprompterID, teleprompterDevice == device else { return }
         let action = DeviceBusinessWire.integer(wire.json,"action"), code = DeviceBusinessWire.integer(wire.json,"code")
         if wire.type == 2, action == 2 {
-            guard code == 1 || code == 7 else { teleprompterStatus = "准备被拒绝 code=\(code ?? -1)，未自动处理冲突"; return }
+            guard code == 1 || code == 7 else { teleprompterStatus = "準備が拒否されました。code=\(code ?? -1)。競合は自動では処理しません"; return }
             if !teleprompterSentFile {
                 guard let file = teleprompterFile else { throw DeviceFeatureError.noSession }
                 teleprompterTransferTask = try voice.sendFile(file,id:did)
                 teleprompterSentFile = true
-                teleprompterStatus = "专用文件通道已提交，等待业务收稿确认；尚未开始播放"
-            } else { teleprompterPrepared = true; teleprompterStatus = "文件提交后收到业务成功回应，可测试开始；尚无独立文件校验/镜片证明" }
+                teleprompterStatus = "専用ファイル経路に送信しました。業務側の受領確認を待っています。再生はまだ開始していません"
+            } else { teleprompterPrepared = true; teleprompterStatus = "ファイル送信後に業務側の成功応答を受信しました。開始をテストできます。独立したファイル検証／レンズでの証明はまだありません" }
             return
         }
-        if wire.type == 3, action == 2 { teleprompterStatus = "开始提词回应 code=\(code ?? -1)"; return }
+        if wire.type == 3, action == 2 { teleprompterStatus = "プロンプター開始の応答 code=\(code ?? -1)"; return }
         guard let control = TeleprompterControlType(rawValue: UInt16(clamping:wire.type)) else { return }
         let data = try JSONSerialization.data(withJSONObject:wire.json)
         if action == 1 {
             let event = try TeleprompterJSONCodec().decodeGlassesRequest(type:control.rawValue,payload:data)
             switch event {
-            case .progress(let p): teleprompterOffset = p.pageOffset; teleprompterStatus = "眼镜进度回传：UTF-8 原始偏移 \(p.pageOffset)"
-            case .pause: teleprompterStatus = "眼镜请求暂停"
-            case .resume: teleprompterStatus = "眼镜请求恢复"
-            case .stop: teleprompterStatus = "眼镜已请求退出"
+            case .progress(let p): teleprompterOffset = p.pageOffset; teleprompterStatus = "グラスの進捗報告：UTF-8 元のオフセット \(p.pageOffset)"
+            case .pause: teleprompterStatus = "グラスが一時停止をリクエストしました"
+            case .resume: teleprompterStatus = "グラスが再開をリクエストしました"
+            case .stop: teleprompterStatus = "グラスが終了をリクエストしました"
             default: return
             }
             let ack = try TeleprompterJSONCodec().encodeAppResponse(type:control,did:did,code:.accepted)
             try voice.sendBusiness(20,payload:DeviceBusinessWire.encode(type:UInt32(ack.type),json:JSONSerialization.jsonObject(with:ack.payload) as! [String:Any]))
-        } else if action == 2 { teleprompterStatus = "眼镜回应 type\(wire.type) code=\(code ?? -1)" }
+        } else if action == 2 { teleprompterStatus = "グラスの応答 type\(wire.type) code=\(code ?? -1)" }
         if control == .stop, action == 1 || code == 1 {
             if let task = teleprompterTransferTask { voice.cancelFile(task); teleprompterTransferTask = nil }
             teleprompterID = nil; teleprompterPrepared = false; teleprompterFile = nil

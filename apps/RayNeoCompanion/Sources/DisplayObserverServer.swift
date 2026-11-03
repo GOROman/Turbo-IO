@@ -6,7 +6,7 @@ import SwiftUI
 @MainActor final class DisplayObserverServer: ObservableObject {
     static let shared = DisplayObserverServer()
     @Published private(set) var running = false
-    @Published private(set) var status = "已关闭；不会导出观察数据"
+    @Published private(set) var status = "閉じています。観察データはエクスポートしません"
     @Published private(set) var token = ""
     private var listener: NWListener?
     private var clients: [UUID:NWConnection] = [:]
@@ -19,13 +19,13 @@ import SwiftUI
         do {
             let value = try NWListener(using: parameters)
             listener = value; token = UUID().uuidString.replacingOccurrences(of:"-",with:"")
-            observation.reset(); observation.enabled = true; status = "启动中"
+            observation.reset(); observation.enabled = true; status = "起動中"
             value.stateUpdateHandler = { [weak self, weak value] state in
                 Task { @MainActor in
                 guard let self, self.listener === value else { return }
                 switch state {
-                case .ready: self.running = true; self.status = "USB 观察接口已开启 · 30分钟后自动关闭"
-                case .failed: self.stop(); self.status = "接口启动失败；未暴露局域网端口"
+                case .ready: self.running = true; self.status = "USB 観察インターフェースがオン · 30 分後に自動で閉じます"
+                case .failed: self.stop(); self.status = "インターフェースの起動に失敗しました。LAN ポートは公開していません"
                 default: break
                 }
                 }
@@ -40,14 +40,14 @@ import SwiftUI
             expiry = Timer.scheduledTimer(withTimeInterval:1800,repeats:false) { [weak self] _ in
                 Task { @MainActor in self?.stop() }
             }
-        } catch { stop(); status = "观察接口不可用" }
+        } catch { stop(); status = "観察インターフェースは利用できません" }
     }
     func stop() {
         expiry?.invalidate(); expiry = nil
         listener?.cancel(); listener = nil
         for c in clients.values { c.cancel() }; clients.removeAll()
         observation.enabled = false; observation.includesText = false; observation.reset()
-        token = ""; running = false; status = "已关闭并清空本轮观察数据"
+        token = ""; running = false; status = "閉じて、今回の観察データを消去しました"
     }
     private func accept(_ connection: NWConnection) {
         guard clients.count < 8 else { connection.cancel(); return }
@@ -93,23 +93,23 @@ struct DisplayObserverView: View {
     var body: some View {
         ScrollView {
             VStack(alignment:.leading,spacing:18) {
-                Text("显示观察 · USB").font(.title2.bold())
-                Text("只读回传页面状态；模拟预览不是镜片截图。不会开启录音、调用模型或改变眼镜页面。")
+                Text("表示観察 · USB").font(.title2.bold())
+                Text("ページ状態を読み取り専用で送り返します。シミュレータのプレビューはレンズのスクリーンショットではありません。録音を開始したり、モデルを呼び出したり、グラスのページを変更したりはしません。")
                 Text(server.status).accessibilityIdentifier("display-observer-status")
-                Toggle("包含本轮发送文字",isOn:$observation.includesText).accessibilityIdentifier("display-observer-text")
-                Text("仅在开启期间收集，最多80条事件；文字不写入日志或磁盘。关闭会清空缓存与令牌。若 App 被挂起，电脑会显示数据失联。")
+                Toggle("今回送信する文字を含める",isOn:$observation.includesText).accessibilityIdentifier("display-observer-text")
+                Text("オンの間だけ収集し、イベントは最大 80 件です。文字はログやディスクに書きません。閉じるとキャッシュとトークンを消去します。アプリが中断されると、PC 側ではデータ途絶と表示されます。")
                     .font(.caption).foregroundStyle(.secondary)
-                Button(server.running ? "关闭观察接口" : "开启 USB 观察接口") { server.running ? server.stop() : server.start() }
+                Button(server.running ? "観察インターフェースを閉じる" : "USB 観察インターフェースを開く") { server.running ? server.stop() : server.start() }
                     .buttonStyle(.borderedProminent).accessibilityIdentifier("display-observer-toggle")
                 if server.running {
-                    Text("在电脑观察页输入一次性令牌：").font(.caption)
+                    Text("PC の観察ページにワンタイムトークンを入力：").font(.caption)
                     Text(server.token).font(.system(.caption,design:.monospaced)).textSelection(.enabled)
                         .accessibilityIdentifier("display-observer-token")
-                    Button("复制令牌") { UIPasteboard.general.setItems([["public.utf8-plain-text":server.token]],options:[.localOnly:true,.expirationDate:Date().addingTimeInterval(120)]) }
-                    Text("USB 转发端口 18765 · 仅本机回环地址可访问 · 不依赖越狱")
+                    Button("トークンをコピー") { UIPasteboard.general.setItems([["public.utf8-plain-text":server.token]],options:[.localOnly:true,.expirationDate:Date().addingTimeInterval(120)]) }
+                    Text("USB 転送ポート 18765 · ローカルループバックのみアクセス可 · 脱獄不要")
                         .font(.caption).foregroundStyle(.secondary)
                 }
             }.padding(20)
-        }.navigationTitle("显示观察").navigationBarTitleDisplayMode(.inline)
+        }.navigationTitle("表示観察").navigationBarTitleDisplayMode(.inline)
     }
 }

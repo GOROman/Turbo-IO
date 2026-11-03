@@ -9,42 +9,42 @@ struct TodoDeliveryView: View {
     var body: some View {
         List {
             Section {
-                Text("本机编辑会保留到下次发送。重连不自动批量重发；首次发送新条目仍需在待办首页确认。")
-                Text("已提交不是眼镜逐项确认。完成状态回传无法证明标题版本送达；计划时间不发送。")
+                Text("この端末での編集は次回送信まで保持されます。再接続しても一括で再送はしません。新規項目の初回送信はToDoホームでの確認が必要です。")
+                Text("送信済みはグラス側の項目ごとの確認ではありません。完了状態の返信では、タイトルの版が届いたことまでは証明できません。予定時刻は送信されません。")
                     .font(.caption).foregroundStyle(.secondary)
-                Button("重试已关联条目的待发送修改") { confirmRetry = true }
+                Button("連携済み項目の未送信の変更を再試行") { confirmRetry = true }
                     .disabled(!voice.ready || !rows.contains { $0.wireID != nil && $0.delivery?.pending == true })
                     .accessibilityIdentifier("todo-retry-pending")
                 Text(features.todoStatus).font(.caption)
                 if let error = features.error { Text(error).font(.caption).foregroundStyle(Palette.amber) }
             }
-            Section("本机发送记录") {
-                if rows.isEmpty { Text("暂无待办发送记录").accessibilityIdentifier("todo-delivery-empty") }
+            Section("この端末の送信履歴") {
+                if rows.isEmpty { Text("ToDoの送信履歴はまだありません").accessibilityIdentifier("todo-delivery-empty") }
                 ForEach(rows) { row in
                     VStack(alignment: .leading, spacing: 8) {
                         Text(row.title).font(.headline)
                         Text(row.deliveryDescription).font(.caption)
                         if let date = row.delivery?.submittedAt {
-                            Text("上次提交：" + date.formatted(date: .abbreviated, time: .standard)).font(.caption2)
+                            Text("前回送信：" + date.formatted(date: .abbreviated, time: .standard)).font(.caption2)
                         }
                         if let observed = row.delivery?.conflict {
-                            Text("手机：\(row.completed ? "已完成" : "未完成") · 眼镜回报：\(observed.completed ? "已完成" : "未完成")")
+                            Text("スマホ：\(row.completed ? "完了" : "未完了") · グラスの返信：\(observed.completed ? "完了" : "未完了")")
                                 .font(.caption)
-                            Text("重要标记：手机 \((row.important ?? false) ? "是" : "否") · 眼镜 \(observed.important.map { $0 ? "是" : "否" } ?? "未提供")")
+                            Text("重要フラグ：スマホ \((row.important ?? false) ? "はい" : "いいえ") · グラス \(observed.important.map { $0 ? "はい" : "いいえ" } ?? "なし")")
                                 .font(.caption)
-                            Text("保留本机标题和计划时间。下面的选择只解决本机冲突，不立即发送。")
+                            Text("この端末のタイトルと予定時刻は保持されます。以下の選択はこの端末の競合を解決するだけで、すぐには送信しません。")
                                 .font(.caption2).foregroundStyle(.secondary)
-                            Button("保留手机状态，加入待发送") { store.resolveTodoConflict(row.id, useGlassesStatus: false) }
+                            Button("スマホの状態を保持し、送信待ちに追加") { store.resolveTodoConflict(row.id, useGlassesStatus: false) }
                                 .buttonStyle(.borderless)
-                            Button("采用眼镜状态，保留本机标题") { store.resolveTodoConflict(row.id, useGlassesStatus: true) }
+                            Button("グラスの状態を採用し、この端末のタイトルを保持") { store.resolveTodoConflict(row.id, useGlassesStatus: true) }
                                 .buttonStyle(.borderless)
                         }
                     }.padding(.vertical, 6)
                 }
             }
-        }.navigationTitle("待发送与冲突").navigationBarTitleDisplayMode(.inline)
-            .confirmationDialog("重试当前眼镜已关联的待发送修改？不会发送仅存手机的新条目。", isPresented: $confirmRetry) {
-                Button("重试待发送") { features.syncTodos(pendingOnly: true) }
+        }.navigationTitle("送信待ちと競合").navigationBarTitleDisplayMode(.inline)
+            .confirmationDialog("現在のグラスと連携済みの未送信の変更を再試行しますか？スマホだけにある新規項目は送信されません。", isPresented: $confirmRetry) {
+                Button("送信待ちを再試行") { features.syncTodos(pendingOnly: true) }
             }
     }
 }

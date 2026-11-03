@@ -8,34 +8,34 @@ struct ConversationTimelineView: View {
     var body: some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 18) {
-                Text("只记录Turbo IO里的真实 AI 对话，包含识别文字、回答和时间。不读取其他 App 的聊天；不把流程演示当成聊天记录。")
+                Text("Turbo IO 内の実際の AI 会話だけを記録します。認識テキスト、回答、時刻を含みます。他の App のチャットは読み取りません。フロー用のデモをチャット記録として扱うこともありません。")
                     .font(.caption).foregroundStyle(Palette.muted)
                 if let error = timeline.storageError { Text(error).font(.caption).foregroundStyle(Palette.amber) }
-                PrimaryButton(title: exporting ? "准备导出…" : "导出完整时间轴", icon: "square.and.arrow.up", enabled: !timeline.turns.isEmpty && !exporting) {
+                PrimaryButton(title: exporting ? "エクスポートを準備中…" : "タイムライン全体をエクスポート", icon: "square.and.arrow.up", enabled: !timeline.turns.isEmpty && !exporting) {
                     exporting = true
-                    Task { defer { exporting = false }; do { exportURL = try await timeline.export() } catch { self.error = "导出失败，历史记录没有删除。" } }
+                    Task { defer { exporting = false }; do { exportURL = try await timeline.export() } catch { self.error = "エクスポートに失敗しました。履歴は削除されていません。" } }
                 }.accessibilityIdentifier("timeline-export")
                 if let exportURL {
-                    ShareLink(item: exportURL) { Label("分享 / 存储到文件（Markdown）", systemImage: "doc") }
-                    Text("这是点击导出时的快照；之后的新对话需重新导出。可通过系统分享保存到文件、NAS 文件提供器或 Obsidian。")
+                    ShareLink(item: exportURL) { Label("共有 / ファイルに保存（Markdown）", systemImage: "doc") }
+                    Text("これはエクスポートをタップした時点のスナップショットです。その後の新しい会話は再エクスポートが必要です。システムの共有からファイル、NAS ファイルプロバイダ、Obsidian に保存できます。")
                         .font(.caption2).foregroundStyle(Palette.muted)
                 }
                 if timeline.turns.isEmpty {
-                    Card { EmptyState(icon: "clock", title: "还没有对话", detail: "真实对话会按时间自动记录在本机。\n关闭实时页不会删除历史。") }
+                    Card { EmptyState(icon: "clock", title: "まだ会話がありません", detail: "実際の会話は時刻順に自動でこのデバイスに記録されます。\nライブ画面を閉じても履歴は削除されません。") }
                 }
                 ForEach(timeline.turns.reversed()) { turn in
                     Card {
                         HStack { Text(turn.startedAt.formatted(date: .abbreviated, time: .standard)).font(.caption); Spacer(); Badge(text: turn.outcome) }
-                        Label("我", systemImage: "person").font(.caption.bold()).foregroundStyle(Palette.green)
-                        Text(turn.question.isEmpty ? "未收到有效识别文字" : turn.question).font(.subheadline).textSelection(.enabled)
+                        Label("自分", systemImage: "person").font(.caption.bold()).foregroundStyle(Palette.green)
+                        Text(turn.question.isEmpty ? "有効な認識テキストを受信していません" : turn.question).font(.subheadline).textSelection(.enabled)
                         Divider().overlay(Palette.line)
                         Label("AI", systemImage: "sparkles").font(.caption.bold()).foregroundStyle(Palette.green)
-                        Text(turn.answer.isEmpty ? "没有生成回答" : turn.answer).font(.subheadline).textSelection(.enabled)
+                        Text(turn.answer.isEmpty ? "回答が生成されていません" : turn.answer).font(.subheadline).textSelection(.enabled)
                     }.privacySensitive()
                 }
             }.padding(24)
-        }.background(Palette.background).navigationTitle("对话时间轴").navigationBarTitleDisplayMode(.inline)
+        }.background(Palette.background).navigationTitle("会話タイムライン").navigationBarTitleDisplayMode(.inline)
             .toolbar(.visible, for: .navigationBar).preference(key: CompanionTabBarHiddenPreference.self, value: true)
-            .alert("导出", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) { Button("知道了") {} } message: { Text(error ?? "") }
+            .alert("エクスポート", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) { Button("わかった") {} } message: { Text(error ?? "") }
     }
 }

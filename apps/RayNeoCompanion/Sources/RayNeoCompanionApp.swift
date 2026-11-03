@@ -47,10 +47,10 @@ struct RootView: View {
         .safeAreaInset(edge: .bottom, spacing: 0) {
             if !hideTabBar {
             HStack(spacing: 0) {
-                tabButton(0, "设备", "eyeglasses")
-                tabButton(1, "会话", "bubble.left")
-                tabButton(2, "归档", "folder")
-                tabButton(3, "工具", "case")
+                tabButton(0, "デバイス", "eyeglasses")
+                tabButton(1, "会話", "bubble.left")
+                tabButton(2, "アーカイブ", "folder")
+                tabButton(3, "ツール", "case")
             }
             .padding(.horizontal, 16).padding(.top, 9).padding(.bottom, 2)
             .background(.white)
@@ -68,16 +68,16 @@ struct RootView: View {
             guard url.isFileURL, ["txt", "epub"].contains(url.pathExtension.lowercased()) else { return }
             incomingBook = url; confirmBook = true
         }
-        .confirmationDialog("将这份书籍复制为Turbo IO本地文字？不上传、不修改原文件。", isPresented: $confirmBook) {
-            Button("导入书籍") {
+        .confirmationDialog("この本をTurbo IOのローカルテキストとしてコピーしますか？アップロードせず、元のファイルも変更しません。", isPresented: $confirmBook) {
+            Button("本をインポート") {
                 guard let url = incomingBook else { return }
                 incomingBook = nil
                 Task { await store.books.importFile(url); showBooks = true }
             }
-            Button("取消", role: .cancel) { incomingBook = nil }
+            Button("キャンセル", role: .cancel) { incomingBook = nil }
         }
         .sheet(isPresented: $showBooks) {
-            NavigationStack { BookShelfView().toolbar { ToolbarItem(placement: .confirmationAction) { Button("完成") { showBooks = false } } } }
+            NavigationStack { BookShelfView().toolbar { ToolbarItem(placement: .confirmationAction) { Button("完了") { showBooks = false } } } }
         }
         .onAppear {
             guard !didApplyLaunchArguments else { return }

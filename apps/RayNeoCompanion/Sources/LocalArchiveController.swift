@@ -12,11 +12,11 @@ enum LocalArchiveError: LocalizedError {
     case busy, fixtureUnavailable, coordinationFailed, noteMissing, noteChanged
     var errorDescription: String? {
         switch self {
-        case .busy: return "归档正在处理另一项操作，请稍候。"
-        case .fixtureUnavailable: return "合成样本仅供隔离的 Debug 验收使用。"
-        case .coordinationFailed: return "文件提供器未能提供可读取的副本，请等文件下载完成后重试。"
-        case .noteMissing: return "找不到这个 Markdown 修订，未准备分享。"
-        case .noteChanged: return "Markdown 文件与保存的校验记录不一致，已停止分享，没有覆盖文件。"
+        case .busy: return "アーカイブが別の操作を処理中です。しばらくお待ちください。"
+        case .fixtureUnavailable: return "合成サンプルは隔離された Debug 検証専用です。"
+        case .coordinationFailed: return "ファイルプロバイダから読み取り可能なコピーを取得できませんでした。ファイルのダウンロード完了後に再試行してください。"
+        case .noteMissing: return "この Markdown リビジョンが見つかりません。共有の準備はしていません。"
+        case .noteChanged: return "Markdown ファイルが保存済みの検証記録と一致しません。共有を停止しました。ファイルは上書きしていません。"
         }
     }
 }
@@ -175,7 +175,7 @@ actor LocalArchiveRepository {
         let source = root.appendingPathComponent("Simulator-QA-not-valid-audio.wav")
         // Deliberately not decodable audio: the test proves copy/checksum, not recording or ASR.
         try Data(String(repeating: "SYNTHETIC BYTES; NOT VALID AUDIO.\n", count: 31).utf8).write(to: source, options: .withoutOverwriting)
-        return try await importFile(source, title: "合成验收样本 · 非有效音频")
+        return try await importFile(source, title: "合成検証サンプル · 無効な音声")
     }
     #endif
 
@@ -193,7 +193,7 @@ actor LocalArchiveRepository {
             guard result.utf8.count + String(character).utf8.count <= 256 else { break }
             result.append(character)
         }
-        return result.isEmpty ? "本地录音" : result
+        return result.isEmpty ? "ローカル録音" : result
     }
 }
 
@@ -227,31 +227,31 @@ final class LocalArchiveController: ObservableObject {
 
     func load() async {
         guard !isBusy else { return }
-        await perform("读取本地归档…") {
+        await perform("ローカルアーカイブを読み取り中…") {
             let snapshot = try await self.repository.load()
             self.recordings = snapshot.recordings
             if snapshot.recovery.recoveredTransactions > 0 || snapshot.recovery.retainedUnjournaledFiles > 0 {
-                self.statusMessage = "已恢复 \(snapshot.recovery.recoveredTransactions) 项事务；保留 \(snapshot.recovery.retainedUnjournaledFiles) 个未登记临时文件，未自动删除。"
+                self.statusMessage = "トランザクション \(snapshot.recovery.recoveredTransactions) 件を復旧しました。未登録の一時ファイル \(snapshot.recovery.retainedUnjournaledFiles) 件は保持し、自動削除はしていません。"
             }
         }
     }
 
     func loadExportCopies() async {
         guard !isBusy else { return }
-        await perform("读取导出副本…") { self.exportCopies = try await self.repository.exportCopyCatalog() }
+        await perform("エクスポートコピーを読み取り中…") { self.exportCopies = try await self.repository.exportCopyCatalog() }
     }
     func moveExportCopy(_ id: UUID, toTrash: Bool) async {
         guard !isBusy else { return }
-        await perform("整理导出副本…") {
+        await perform("エクスポートコピーを整理中…") {
             try await self.repository.moveExportCopy(id, toTrash: toTrash)
             self.exportCopies = try await self.repository.exportCopyCatalog()
-            self.statusMessage = toTrash ? "已移入本机暂存箱，可恢复；未删除文件，不释放磁盘空间。" : "已恢复导出副本，未覆盖其他文件。"
+            self.statusMessage = toTrash ? "本機の一時保管箱へ移動しました。復元できます。ファイルは削除しておらず、ディスク容量も解放されません。" : "エクスポートコピーを復元しました。他のファイルは上書きしていません。"
         }
     }
 
     @discardableResult func importFile(_ source: URL, title: String? = nil) async -> Bool {
         var imported = false
-        await perform("复制并校验本地文件…") {
+        await perform("ローカルファイルをコピーして検証中…") {
             self.accept(try await self.repository.importFile(source, title: title))
             self.recordings = try await self.repository.load().recordings
             imported = true
@@ -261,12 +261,12 @@ final class LocalArchiveController: ObservableObject {
 
     func verify(_ id: UUID) async -> URL? {
         var output: URL?
-        await perform("重新校验音频与已登记笔记…", recordingID: id) {
+        await perform("音声と登録済みノートを再検証中…", recordingID: id) {
             self.latestVerifications.removeValue(forKey: id)
             let receipt = try await self.repository.verify(id)
             self.latestVerifications[id] = receipt.verifiedAt
             self.verificationIssues.removeValue(forKey: id)
-            self.statusMessage = "音频与已登记笔记的字节复核通过；没有解码、识别或上传。"
+            self.statusMessage = "音声と登録済みノートのバイト再確認が通りました。デコード・認識・アップロードはしていません。"
             output = receipt.audioURL
         }
         return output
@@ -274,13 +274,13 @@ final class LocalArchiveController: ObservableObject {
 
     func saveTranscript(recordingID: UUID, text: String, title: String) async -> NoteReceipt? {
         var output: NoteReceipt?
-        await perform("保存本地 Markdown 修订…", recordingID: recordingID) {
+        await perform("ローカル Markdown リビジョンを保存中…", recordingID: recordingID) {
             self.latestVerifications.removeValue(forKey: recordingID)
             let receipt = try await self.repository.saveTranscript(recordingID: recordingID, text: text, title: title)
             self.recordings = try await self.repository.load().recordings
             self.statusMessage = receipt.reusedExistingRevision
-                ? "相同文字与标题已存在，复用第 \(receipt.revision.number) 版；没有覆盖旧稿。"
-                : "第 \(receipt.revision.number) 版 Markdown 已保存到本机；没有上传。"
+                ? "同じテキストとタイトルのものが既にあるため、第 \(receipt.revision.number) 版を再利用しました。旧稿は上書きしていません。"
+                : "第 \(receipt.revision.number) 版の Markdown を本機に保存しました。アップロードはしていません。"
             output = receipt
         }
         return output
@@ -288,7 +288,7 @@ final class LocalArchiveController: ObservableObject {
 
     func prepareNoteShare(recordingID: UUID, revisionID: UUID) async -> URL? {
         var output: URL?
-        await perform("核对 Markdown 文件…", recordingID: recordingID) {
+        await perform("Markdown ファイルを確認中…", recordingID: recordingID) {
             self.latestVerifications.removeValue(forKey: recordingID)
             output = try await self.repository.prepareNoteShare(recordingID: recordingID, revisionID: revisionID)
         }
@@ -297,10 +297,10 @@ final class LocalArchiveController: ObservableObject {
 
     func preparePortableShare(recordingID: UUID, revisions: SnapshotRevisionSelection) async -> URL? {
         var output: URL?
-        await perform("制作独立快照并校验 ZIP…",recordingID:recordingID) {
+        await perform("独立スナップショットを作成し ZIP を検証中…",recordingID:recordingID) {
             self.latestVerifications.removeValue(forKey:recordingID)
             output = try await self.repository.preparePortableShare(recordingID:recordingID,revisions:revisions)
-            self.statusMessage = "便携 ZIP 已逐项解包校验；音频与所选修订在同一包内。未上传，未验证 Obsidian 索引。"
+            self.statusMessage = "ポータブル ZIP を項目ごとに展開して検証しました。音声と選択したリビジョンは同じパッケージ内です。アップロードはしていません。Obsidian のインデックスは未検証です。"
         }
         return output
     }
@@ -308,7 +308,7 @@ final class LocalArchiveController: ObservableObject {
     func importTestFixture() async {
         #if DEBUG
         guard allowsTestFixture else { errorMessage = LocalArchiveError.fixtureUnavailable.localizedDescription; return }
-        await perform("导入明确标记的合成样本…") {
+        await perform("明示的にマークした合成サンプルをインポート中…") {
             self.accept(try await self.repository.importSyntheticFixture())
             self.recordings = try await self.repository.load().recordings
         }
@@ -318,7 +318,7 @@ final class LocalArchiveController: ObservableObject {
     #if DEBUG
     func importContainerFixture(_ fixture: ContainerSyntheticFixture) async {
         guard allowsTestFixture else { errorMessage = LocalArchiveError.fixtureUnavailable.localizedDescription; return }
-        await perform("创建并导入合成容器字节…") {
+        await perform("合成コンテナバイトを作成してインポート中…") {
             self.accept(try await self.repository.importContainerFixture(fixture))
             self.recordings = try await self.repository.load().recordings
         }
@@ -327,7 +327,7 @@ final class LocalArchiveController: ObservableObject {
 
     private func accept(_ receipt: ArchiveReceipt) {
         latestVerifications[receipt.recording.id] = receipt.verifiedAt
-        statusMessage = receipt.reusedExistingContent ? "检测到相同字节，已复用原归档；来源与原条目未修改。" : "本机副本已复制并校验；未解码、未识别、未上传。"
+        statusMessage = receipt.reusedExistingContent ? "同じバイト列を検出したため、元のアーカイブを再利用しました。元のソースと項目は変更していません。" : "本機コピーをコピーして検証しました。デコード・認識・アップロードはしていません。"
     }
 
     private func recordContainerIntegrityFailure(_ identity: AudioInspectionIdentity, error: Error) {
@@ -347,7 +347,7 @@ final class LocalArchiveController: ObservableObject {
                 verificationIssues[recordingID] = Self.describe(error)
                 latestVerifications.removeValue(forKey: recordingID)
             }
-            errorMessage = Self.describe(error) + "\n本 App 未修改或删除来源文件。已提交的恢复日志可能在下次刷新时完成，不承诺失败即回滚。"
+            errorMessage = Self.describe(error) + "\nこの App はソースファイルを変更も削除もしていません。送信済みの復旧ログは次回の更新時に完了する場合があります。失敗時のロールバックは保証しません。"
         }
     }
 
@@ -377,21 +377,21 @@ final class LocalArchiveController: ObservableObject {
     static func describe(_ error: Error) -> String {
         guard let archiveError = error as? ArchiveError else { return error.localizedDescription }
         switch archiveError {
-        case .emptySource: return "所选文件为空。"
-        case .fileSizeLimitExceeded: return "音频超过本地归档大小限制（默认 512 MiB）。"
-        case .unsupportedFileType, .invalidFileURL: return "请选择已完成写入的普通本地文件。"
-        case .sourceChangedDuringCopy: return "来源在复制时发生变化，请在录音写入结束后重试。"
-        case .invalidTitle: return "标题必须是 1 至 256 UTF-8 字节的单行文本。"
-        case .invalidTranscript: return "请提供非空文字，不支持除换行、制表符以外的控制字符。"
-        case .transcriptSizeLimitExceeded: return "文字超过 1 MiB，请拆分整理后重试。"
-        case .recordingLimitExceeded, .revisionLimitExceeded, .manifestSizeLimitExceeded: return "已达到归档容量或修订数量限制；原资料仍保留。"
-        case .archivedContentChanged, .destinationConflict: return "已存文件与归档记录不一致或存在冲突，操作已停止，没有覆盖原文件。"
-        case .archiveBusy: return "归档目录正被另一项操作占用，请稍后刷新。"
-        case .archiveLocationChanged: return "归档目录发生移动或替换，已停止操作。请恢复原目录后重试。"
-        case .recordingNotFound: return "录音已不在当前归档记录中，请刷新。"
-        case .invalidManifest, .invalidJournal, .missingRecoveryData: return "归档记录或恢复数据需要检查，已保留现有文件，没有自动修复覆盖。"
-        case .invalidLimits, .targetDirectoryRequired: return "本地归档目录或容量设置无效。"
-        case .io: return "本机文件操作失败，请检查可用空间、设备解锁状态和文件权限。"
+        case .emptySource: return "選択したファイルが空です。"
+        case .fileSizeLimitExceeded: return "音声がローカルアーカイブのサイズ上限（デフォルト 512 MiB）を超えています。"
+        case .unsupportedFileType, .invalidFileURL: return "書き込みが完了した通常のローカルファイルを選んでください。"
+        case .sourceChangedDuringCopy: return "コピー中にソースが変化しました。録音の書き込みが終わってから再試行してください。"
+        case .invalidTitle: return "タイトルは UTF-8 で1〜256バイトの1行テキストにしてください。"
+        case .invalidTranscript: return "空でないテキストを指定してください。改行とタブ以外の制御文字は使えません。"
+        case .transcriptSizeLimitExceeded: return "テキストが 1 MiB を超えています。分割して整理してから再試行してください。"
+        case .recordingLimitExceeded, .revisionLimitExceeded, .manifestSizeLimitExceeded: return "アーカイブ容量またはリビジョン数の上限に達しました。元の資料は保持されています。"
+        case .archivedContentChanged, .destinationConflict: return "保存済みファイルがアーカイブ記録と一致しないか競合しています。操作を停止しました。元のファイルは上書きしていません。"
+        case .archiveBusy: return "アーカイブディレクトリが別の操作で使用中です。しばらくしてから更新してください。"
+        case .archiveLocationChanged: return "アーカイブディレクトリが移動または置換されました。操作を停止しました。元のディレクトリに戻してから再試行してください。"
+        case .recordingNotFound: return "その録音は現在のアーカイブ記録にありません。更新してください。"
+        case .invalidManifest, .invalidJournal, .missingRecoveryData: return "アーカイブ記録または復旧データの確認が必要です。既存のファイルは保持し、自動修復での上書きはしていません。"
+        case .invalidLimits, .targetDirectoryRequired: return "ローカルアーカイブのディレクトリまたは容量設定が無効です。"
+        case .io: return "本機のファイル操作に失敗しました。空き容量、デバイスのロック解除状態、ファイル権限を確認してください。"
         }
     }
 }

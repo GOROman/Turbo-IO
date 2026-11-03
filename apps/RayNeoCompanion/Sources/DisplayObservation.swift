@@ -22,9 +22,9 @@ import Combine
         String(decoding:text.utf8.prefix(bytes),as:UTF8.self)
     }
     func newUtterance() { guard enabled else { return }; question = ""; answer = ""; round = nil }
-    private let apps = ["com.rayneo.liteos.recorder":"录音", "com.rayneo.liteos.aiSubtitle":"字幕",
-        "com.rayneo.liteos.conversationAssist":"实时提示", "com.rayneo.liteos.todo":"待办",
-        "com.rayneo.liteos.prompter":"提词器", "com.rayneo.liteos.ai_memory":"全天智记"]
+    private let apps = ["com.rayneo.liteos.recorder":"録音", "com.rayneo.liteos.aiSubtitle":"字幕",
+        "com.rayneo.liteos.conversationAssist":"リアルタイムヒント", "com.rayneo.liteos.todo":"ToDo",
+        "com.rayneo.liteos.prompter":"プロンプター", "com.rayneo.liteos.ai_memory":"終日記録"]
     func reset() {
         page = [:]; screen = nil; question = ""; answer = ""; round = nil
         events = []; sequence = 0; lastInbound = nil; session = UUID().uuidString
@@ -32,17 +32,17 @@ import Combine
     func connection(_ ready: Bool, phase: String) {
         if connected != ready {
             connected = ready
-            if enabled { event("connection", detail: ready ? "唯一眼镜已认证" : "眼镜连接不可用；旧回报失效") }
+            if enabled { event("connection", detail: ready ? "単一のグラスが認証済み" : "グラス接続が利用できません。古いレポートは無効です") }
             // A new link must earn a new page observation; never label old data current.
             page = [:]; screen = nil; lastInbound = nil; question = ""; answer = ""; round = nil
         }
         self.phase = String(phase.prefix(60))
     }
-    func loss() { guard enabled else { return }; page = [:]; screen = nil; event("loss", detail: "接收队列丢包；页面状态未知") }
+    func loss() { guard enabled else { return }; page = [:]; screen = nil; event("loss", detail: "受信キューでパケットロス。ページ状態は不明です") }
     func voiceMetadata(type: UInt32) {
         guard enabled, connected, ![3,163,164].contains(type) else { return }
         lastInbound = Date().timeIntervalSince1970
-        event("received",detail:"助手上行类型 \(type) · 仅类型观察",business:13,type:type)
+        event("received",detail:"アシスタント上りタイプ \(type) · タイプのみ観察",business:13,type:type)
     }
     func packet(_ data: Data, business: UInt8, inbound: Bool) {
         guard enabled, connected, data.count <= 131_100,
@@ -51,26 +51,26 @@ import Combine
         if business == 14, !wire.bytes.isEmpty { return }
         let now = Date().timeIntervalSince1970
         if inbound { lastInbound = now }
-        var detail = "业务 \(business) / 类型 \(wire.type) · \(data.count) B"
+        var detail = "業務 \(business) / タイプ \(wire.type) · \(data.count) B"
         let j = wire.json
         if inbound, business == 15, wire.type == 24, j["cmd"] as? String == "glass_preview",
            let payload = j["payload"] as? [String: Any], let raw = payload["data"] as? String,
            raw.utf8.count <= 16_384, let bytes = raw.data(using: .utf8),
            let p = try? JSONSerialization.jsonObject(with: bytes) as? [String: Any],
            let scene = DeviceBusinessWire.integer(p,"scence") ?? DeviceBusinessWire.integer(p,"scene") {
-            var result: [String:Any] = ["scene":scene,"name":[0:"仪表盘",1:"应用菜单",2:"应用页面"][scene] ?? "未知场景", "at":now]
+            var result: [String:Any] = ["scene":scene,"name":[0:"ダッシュボード",1:"アプリメニュー",2:"アプリページ"][scene] ?? "不明なシーン", "at":now]
             if let index = DeviceBusinessWire.integer(p,"index") { result["index"] = index }
             if let app = p["app"] as? [String:Any] {
-                result["app"] = apps[app["name"] as? String ?? ""] ?? "未知应用"
+                result["app"] = apps[app["name"] as? String ?? ""] ?? "不明なアプリ"
                 if let action = DeviceBusinessWire.integer(app,"action") { result["action"] = action }
             }
             // Exit is an event, not evidence that the exited app remains on screen.
-            if result["action"] as? Int64 == 2 { result["name"] = "应用已退出；等待下一页面" }
-            page = result; detail = "glass_preview · \(result["name"] ?? "未知") · \(result["app"] ?? "")"
+            if result["action"] as? Int64 == 2 { result["name"] = "アプリは終了しました。次のページを待機中" }
+            page = result; detail = "glass_preview · \(result["name"] ?? "不明") · \(result["app"] ?? "")"
         }
         if inbound, business == 15, j["cmd"] as? String == "screen_status",
            let payload = j["payload"] as? [String:Any], let value = DeviceBusinessWire.integer(payload,"value") {
-            screen = value; detail = "screen_status 原始值 \(value)（不推定像素）"
+            screen = value; detail = "screen_status 生の値 \(value)（ピクセルは推定しません）"
         }
         var text: String?
         if !inbound, includesText {
@@ -102,7 +102,7 @@ import Combine
         var value: [String:Any] = ["version":1,"session":session,"sampledAt":Date().timeIntervalSince1970,
             "connected":connected,"phase":phase,"includesText":includesText,"page":page,
             "question":includesText ? question : "","answer":includesText ? answer : "","events":events,
-            "notice":"页面为状态重绘，不是镜片截图；submitted 仅表示提交 SDK 成功。"]
+            "notice":"ページは状態の再描画であり、レンズのスクリーンショットではありません。submitted は SDK への送信成功のみを意味します。"]
         if let screen { value["screenRaw"] = screen }; if let lastInbound { value["lastInbound"] = lastInbound }
         return value
     }

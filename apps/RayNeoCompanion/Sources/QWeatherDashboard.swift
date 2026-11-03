@@ -7,12 +7,12 @@ enum QWeatherError: LocalizedError {
     case configuration, key, response, stale, network, http(Int)
     var errorDescription: String? {
         switch self {
-        case .configuration: return "请输入有效的和风专属 Host（不带路径）、地点和两位小数经纬度。"
-        case .key: return "请保存该 Host 的和风 API Key；不会复用其他服务的密钥。"
-        case .response: return "和风响应字段、单位或归因信息不完整，未下发。"
-        case .stale: return "天气获取时间已过期，需重新查询；未把响应时间当观测时间。"
-        case .network: return "和风天气网络请求失败或超时，未下发；不自动降级或跟随重定向。"
-        case .http(let code): return "和风天气 HTTP \(code)，请检查服务配置。"
+        case .configuration: return "有効な QWeather 専用 Host（パスなし）・地点・小数2桁までの緯度経度を入力してください。"
+        case .key: return "その Host の QWeather API Key を保存してください。他サービスのキーは流用しません。"
+        case .response: return "QWeather の応答フィールド・単位・出典情報が不完全なため、送信しませんでした。"
+        case .stale: return "天気の取得時刻が古すぎます。再照会が必要です。応答時刻を観測時刻とは扱っていません。"
+        case .network: return "QWeather へのネットワークリクエストが失敗またはタイムアウトしました。送信していません。自動ダウングレードやリダイレクト追従はしません。"
+        case .http(let code): return "QWeather HTTP \(code)。サービス設定を確認してください。"
         }
     }
 }
@@ -131,8 +131,8 @@ enum QWeatherClient {
 @MainActor final class QWeatherDashboard: ObservableObject {
     @Published private(set) var configuration: QWeatherConfiguration
     @Published private(set) var snapshot: QWeatherSnapshot?
-    @Published private(set) var status = "仪表盘实时天气：待配置和风 Host / Key。"
-    @Published private(set) var reply = "尚未发送仪表盘天气。"
+    @Published private(set) var status = "ダッシュボードのリアルタイム天気：QWeather の Host / Key が未設定です。"
+    @Published private(set) var reply = "ダッシュボード天気はまだ送信していません。"
     @Published private(set) var busy = false
     private let defaults: UserDefaults
     private let device: () -> String?
@@ -161,25 +161,25 @@ enum QWeatherClient {
             if !key.isEmpty { try QWeatherVault.save(key,host:value.host) }
             configuration = value; defaults.set(try JSONEncoder().encode(value),forKey:storage)
             cancel(); snapshot = nil; cachedConfig = nil; pending = true; tick()
-        } catch { status = (error as? QWeatherError)?.localizedDescription ?? "配置保存失败。" }
+        } catch { status = (error as? QWeatherError)?.localizedDescription ?? "設定の保存に失敗しました。" }
     }
     func retry() { cancel(); pending = true; tick() }
-    private func cancel() { epoch = UUID(); worker?.cancel(); worker = nil; busy = false; awaiting = nil; reply = "连接或配置已变化，旧回执不沿用。" }
+    private func cancel() { epoch = UUID(); worker?.cancel(); worker = nil; busy = false; awaiting = nil; reply = "接続または設定が変わったため、以前の応答は引き継ぎません。" }
     func tick() {
         let d = device()
         if d != connected { cancel(); connected = d; pending = d != nil }
-        if let since = awaiting, now().timeIntervalSince(since) >= 8 { awaiting = nil; reply = "8 秒内未观察到首页天气回执；未自动重发，不代表镜片一定未显示。" }
-        guard configuration.enabled else { status = "仪表盘自动天气已关闭。"; return }
-        guard let d else { status = "等待眼镜认证连接，未查询或下发。"; return }
+        if let since = awaiting, now().timeIntervalSince(since) >= 8 { awaiting = nil; reply = "8秒以内にトップ天気の応答を確認できませんでした。自動再送はしていません。レンズに表示されていないとは限りません。" }
+        guard configuration.enabled else { status = "ダッシュボードの自動天気はオフです。"; return }
+        guard let d else { status = "グラスの認証接続を待っています。照会も送信もしていません。"; return }
         guard pending, worker == nil else { return }
-        guard !occupied() else { status = "等待语音、录音或提词结束后更新仪表盘。"; return }
+        guard !occupied() else { status = "音声・録音・プロンプターの終了を待ってからダッシュボードを更新します。"; return }
         guard (try? configuration.validate()) != nil else { pending = false; status = QWeatherError.configuration.localizedDescription; return }
         guard let key = readKey(configuration.host) else { pending = false; status = QWeatherError.key.localizedDescription; return }
         let cache = cachedConfig == configuration && snapshot?.isFresh(now()) == true ? snapshot : nil
-        if cache == nil, let lastFetch, now().timeIntervalSince(lastFetch) < 60 { status = "查询间隔保护，满 60 秒后再查询。"; return }
+        if cache == nil, let lastFetch, now().timeIntervalSince(lastFetch) < 60 { status = "照会間隔の保護中です。60秒経ってから再照会します。"; return }
         let token = epoch, c = configuration; pending = false; busy = true
         if cache == nil { lastFetch = now() }
-        status = "获取\(c.location)实时天气，目标为仪表盘首页。"
+        status = "\(c.location)のリアルタイム天気を取得中。送信先はダッシュボードのトップです。"
         worker = Task { [weak self] in
             guard let self else { return }
             defer { if self.epoch == token { self.worker = nil; self.busy = false } }
@@ -189,35 +189,35 @@ enum QWeatherClient {
                 guard !Task.isCancelled, self.epoch == token, self.device() == d, self.configuration == c else { return }
                 guard s.isFresh(self.now()) else { throw QWeatherError.stale }
                 self.snapshot = s; self.cachedConfig = c
-                guard let icon = c.verifiedIcons[String(s.code)] else { self.status = "\(c.location) \(s.lensTemperature)°C · \(s.condition) 已获取；请测试候选图标 \(s.code)，尚未自动下发。"; return }
-                guard !self.occupied() else { self.pending = true; self.status = "已获取天气，等待眼镜空闲。"; return }
+                guard let icon = c.verifiedIcons[String(s.code)] else { self.status = "\(c.location) \(s.lensTemperature)°C · \(s.condition) を取得済み。候補アイコン \(s.code) をテストしてください。自動送信はまだしていません。"; return }
+                guard !self.occupied() else { self.pending = true; self.status = "天気を取得済み。グラスが空くのを待っています。"; return }
                 try self.submit(s,icon:icon,candidate:false)
-            } catch { if self.epoch == token, !Task.isCancelled { self.status = (error as? QWeatherError)?.localizedDescription ?? "天气请求或下发失败。" } }
+            } catch { if self.epoch == token, !Task.isCancelled { self.status = (error as? QWeatherError)?.localizedDescription ?? "天気リクエストまたは送信に失敗しました。" } }
         }
     }
     private func submit(_ s: QWeatherSnapshot, icon: Int, candidate: Bool) throws {
         guard device() != nil, device() == connected, !occupied(), cachedConfig == configuration else { throw DeviceFeatureError.disconnected }
         let bytes = try QWeatherClient.dashboardWire(s,configuration:configuration,icon:icon,now:now())
-        awaiting = now(); reply = "已提交 current_weather_update，等待 type19 同命令回执。"
-        do { try send(bytes) } catch { awaiting = nil; reply = "SDK 发送失败，未确认眼镜接收。"; throw error }
-        status = "仪表盘已提交：\(configuration.location) \(s.lensTemperature)°C · \(s.condition)；图标 \(icon)\(candidate ? " 为待验候选" : " 已人工核对")。不是天气卡片更新。"
+        awaiting = now(); reply = "current_weather_update を送信済み。type19 の同コマンド応答を待っています。"
+        do { try send(bytes) } catch { awaiting = nil; reply = "SDK の送信に失敗しました。グラスの受信は未確認です。"; throw error }
+        status = "ダッシュボードへ送信済み：\(configuration.location) \(s.lensTemperature)°C · \(s.condition)；アイコン \(icon)\(candidate ? " は未検証の候補" : " は目視確認済み")。天気カードの更新ではありません。"
     }
     func testCandidate() {
         guard !busy, awaiting == nil, let s = snapshot else { return }
-        do { try submit(s,icon:s.code,candidate:true) } catch { status = "候选测试未发送：连接、数据时效或空闲状态不满足。" }
+        do { try submit(s,icon:s.code,candidate:true) } catch { status = "候補テストは送信されませんでした：接続・データの鮮度・空き状態の条件を満たしていません。" }
     }
     func confirmDisplayedIcon() {
         guard let s = snapshot, s.isFresh(now()), cachedConfig == configuration else { return }
         configuration.verifiedIcons[String(s.code)] = s.code
         defaults.set(try? JSONEncoder().encode(configuration),forKey:storage)
         cachedConfig = configuration
-        status = "已记录用户确认：天气码 \(s.code) 的同号图标；后续认证连接可自动下发此类型。"
+        status = "ユーザーの確認を記録しました：天気コード \(s.code) の同番号アイコン。今後の認証接続でこの種類を自動送信できます。"
     }
     func receive(device d: String, wire: DeviceBusinessWire) {
         guard d == device(), d == connected, wire.type == 19, wire.bytes.isEmpty,
               wire.json["cmd"] as? String == "current_weather_update", awaiting != nil,
               let p = wire.json["payload"] as? [String:Any], let value = DeviceBusinessWire.integer(p,"value") else { return }
         awaiting = nil
-        reply = "眼镜回报 current_weather_update value=\(value)\(value == 0 ? "（协议成功值）" : "")；回执没有请求 ID，镜片内容仍需确认。"
+        reply = "グラスから current_weather_update value=\(value)\(value == 0 ? "（プロトコルの成功値）" : "") の応答。応答にリクエスト ID はなく、レンズの内容は別途確認が必要です。"
     }
 }

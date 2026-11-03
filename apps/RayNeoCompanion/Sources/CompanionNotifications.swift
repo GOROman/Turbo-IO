@@ -51,12 +51,12 @@ enum GlassesNotificationProtocol {
 
     static func stateLabel(_ raw: Int64) -> String {
         switch raw {
-        case 0: return "空闲（不代表已读）"
-        case 1: return "显示中或间隔期（请核对镜片）"
-        case 2: return "未佩戴"
-        case 3: return "免打扰"
-        case 4: return "其他眼镜功能占用"
-        default: return "未知状态 \(raw)（不作为成功）"
+        case 0: return "空き（既読とは限りません）"
+        case 1: return "表示中または間隔期間中（レンズを確認してください）"
+        case 2: return "未装着"
+        case 3: return "おやすみモード"
+        case 4: return "他のグラス機能が使用中"
+        default: return "不明な状態 \(raw)（成功とは扱いません）"
         }
     }
 }
@@ -73,10 +73,10 @@ struct NotificationPreferences: Codable, Equatable {
     // This is a starter catalog, not an installed-app inventory or a deny-unknown policy.
     var sources: [NotificationSource] = [
         .init(id: GlassesNotificationProtocol.companionAppID, name: "Turbo IO", allowed: true),
-        .init(id: GlassesNotificationProtocol.phoneAppID, name: "电话（含来电）", allowed: true),
-        .init(id: "com.apple.MobileSMS", name: "信息", allowed: true),
-        .init(id: "com.apple.mobilemail", name: "邮件", allowed: true),
-        .init(id: "com.tencent.xin", name: "微信", allowed: true)
+        .init(id: GlassesNotificationProtocol.phoneAppID, name: "電話（着信含む）", allowed: true),
+        .init(id: "com.apple.MobileSMS", name: "メッセージ", allowed: true),
+        .init(id: "com.apple.mobilemail", name: "メール", allowed: true),
+        .init(id: "com.tencent.xin", name: "WeChat", allowed: true)
     ]
     init() {}
     private enum CodingKeys: String, CodingKey { case enabled, sources, displayTime }
@@ -95,12 +95,12 @@ struct NotificationPreferences: Codable, Equatable {
 
 @MainActor final class CompanionNotifications: ObservableObject {
     @Published private(set) var preferences: NotificationPreferences
-    @Published private(set) var configurationStatus = "本机草稿；未读取或修改眼镜设置"
+    @Published private(set) var configurationStatus = "本機の下書き。グラスの設定は読み取りも変更もしていません"
     @Published private(set) var sourcesNeedApply = true
     @Published private(set) var reportedEnabled: Bool?
     @Published private(set) var ancsAvailable: Bool?
-    @Published private(set) var availabilityStatus = "共享通知状态未知"
-    @Published private(set) var testStatus = "尚未发送；业务通知不经过 iOS 通知中心"
+    @Published private(set) var availabilityStatus = "共有通知の状態は不明"
+    @Published private(set) var testStatus = "未送信。業務通知は iOS の通知センターを経由しません"
     @Published private(set) var lastUID: String?
     @Published private(set) var operationStatus: String?
     @Published private(set) var awaitingState = false
@@ -147,19 +147,19 @@ struct NotificationPreferences: Codable, Equatable {
     }
     func setEnabled(_ enabled: Bool) {
         preferences.enabled = enabled; persist()
-        configurationStatus = "总开关草稿已保存，尚未提交"
+        configurationStatus = "マスター切替の下書きを保存しました。まだ送信していません"
         if canSend { applyMaster() }
     }
     func setDisplayTime(_ seconds: Int) {
-        guard [5,10,15,20,30].contains(seconds) else { error = "显示时长不在本版测试范围内。"; return }
+        guard [5,10,15,20,30].contains(seconds) else { error = "表示時間はこのバージョンのテスト範囲外です。"; return }
         preferences.displayTime = seconds; persist(); sourcesNeedApply = true
-        configurationStatus = "显示时长草稿已保存，未下发；需确认全量通知配置"
+        configurationStatus = "表示時間の下書きを保存しました。未送信です。通知設定全体の確認が必要です"
     }
     func setAllowed(_ id: String, _ allowed: Bool) {
         guard let index = preferences.sources.firstIndex(where: { $0.id == id }) else { return }
         preferences.sources[index].allowed = allowed; persist()
         sourcesNeedApply = true
-        configurationStatus = "来源草稿已修改；请点应用来源配置"
+        configurationStatus = "通知元の下書きを変更しました。「通知元設定を適用」をタップしてください"
     }
     @discardableResult func addSource(name: String, id: String) -> Bool {
         let name = name.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -167,25 +167,25 @@ struct NotificationPreferences: Codable, Equatable {
         guard GlassesNotificationProtocol.validAppID(id), !name.isEmpty, name.count <= 40,
               name.rangeOfCharacter(from: .controlCharacters) == nil,
               preferences.sources.count < 100, !preferences.sources.contains(where: { $0.id == id }) else {
-            error = "请输入不重复的 Bundle ID 和 1–40 字名称；来源最多 100 项。"; return false
+            error = "重複しない Bundle ID と1〜40文字の名前を入力してください。通知元は最大100件です。"; return false
         }
         preferences.sources.append(.init(id: id, name: name, allowed: true)); persist()
         sourcesNeedApply = true
-        configurationStatus = "新来源已存为草稿；请点应用来源配置"; error = nil; return true
+        configurationStatus = "新しい通知元を下書きとして保存しました。「通知元設定を適用」をタップしてください"; error = nil; return true
     }
     func connectionChanged() {
         let next = device()
         guard next != currentDevice else { return }
-        currentDevice = next; invalidateConnectionEvidence("连接已变化；需手动应用，不自动覆盖眼镜配置")
+        currentDevice = next; invalidateConnectionEvidence("接続が変わりました。手動で適用が必要です。グラスの設定を自動で上書きはしません")
     }
-    func lostMessages() { invalidateConnectionEvidence("回调发生丢失；状态不再可信，请重新查询或测试") }
+    func lostMessages() { invalidateConnectionEvidence("コールバックの欠落が発生しました。状態は信頼できません。再度照会するかテストしてください") }
     private func invalidateConnectionEvidence(_ reason: String) {
         stateWait?.cancel(); availabilityWait?.cancel(); availabilityGeneration = UUID()
-        if lastUID != nil { testStatus = "\(reason)；上一条结果未确认" }
+        if lastUID != nil { testStatus = "\(reason)；前回の結果は未確認です" }
         awaitingState = false; lastDevice = nil; operationStatus = nil
         submittedEnabled = nil; reportedEnabled = nil; ancsAvailable = nil
         sourcesNeedApply = true
-        configurationStatus = reason; availabilityStatus = "共享通知状态未知"
+        configurationStatus = reason; availabilityStatus = "共有通知の状態は不明"
     }
     private func check() throws -> String {
         connectionChanged()
@@ -195,7 +195,7 @@ struct NotificationPreferences: Codable, Equatable {
     }
     private func perform(_ operation: () throws -> Void) {
         do { try operation(); error = nil }
-        catch { self.error = (error as? LocalizedError)?.errorDescription ?? "提交失败，未确认眼镜收到。" }
+        catch { self.error = (error as? LocalizedError)?.errorDescription ?? "送信に失敗しました。グラスの受信は未確認です。" }
     }
     func applyMaster() {
         perform {
@@ -203,7 +203,7 @@ struct NotificationPreferences: Codable, Equatable {
             submittedEnabled = nil; reportedEnabled = nil
             try transport(21, DeviceBusinessWire.encode(type: 18, json: ["notification": preferences.enabled]))
             submittedEnabled = preferences.enabled
-            configurationStatus = "总开关已提交（\(preferences.enabled ? "开" : "关")）；来源配置未在这一步发送，未确认镜片"
+            configurationStatus = "マスター切替を送信しました（\(preferences.enabled ? "オン" : "オフ")）。通知元設定はこのステップでは送信していません。レンズは未確認です"
         }
     }
     /// Full replacement, explicitly confirmed in UI. No merge/readback contract is known.
@@ -215,7 +215,7 @@ struct NotificationPreferences: Codable, Equatable {
             try transport(21, GlassesNotificationProtocol.settings(preferences))
             submittedEnabled = preferences.enabled
             sourcesNeedApply = false
-            configurationStatus = "来源及总开关已提交；无逐项回执，需真机验证过滤效果"
+            configurationStatus = "通知元とマスター切替を送信しました。項目ごとの応答はないため、フィルター効果は実機で検証が必要です"
         }
     }
     func queryAvailability() {
@@ -224,13 +224,13 @@ struct NotificationPreferences: Codable, Equatable {
             let packet = try DeviceBusinessWire.encode(type: 20, json: [:])
             availabilityWait?.cancel(); availabilityGeneration = UUID()
             let generation = availabilityGeneration
-            ancsAvailable = nil; availabilityStatus = "查询已提交，等待眼镜报告"
+            ancsAvailable = nil; availabilityStatus = "照会を送信しました。グラスの報告を待っています"
             do { try transport(21, packet) }
-            catch { availabilityStatus = "查询提交失败；状态未知"; throw error }
+            catch { availabilityStatus = "照会の送信に失敗しました。状態は不明です"; throw error }
             availabilityWait = Task { [weak self, timeout] in
                 do { try await Task.sleep(nanoseconds: timeout) } catch { return }
                 guard let self, self.availabilityGeneration == generation, self.device() == id, self.ancsAvailable == nil else { return }
-                self.availabilityStatus = "查询超时；没有当前共享通知状态，不自动重试"
+                self.availabilityStatus = "照会がタイムアウトしました。現在の共有通知の状態はなく、自動リトライはしません"
             }
         }
     }
@@ -250,16 +250,16 @@ struct NotificationPreferences: Codable, Equatable {
             let packet = try GlassesNotificationProtocol.notification(uid: uid, title: title, content: content)
             // Register before transport so an immediate same-UID callback cannot be lost.
             lastUID = uid; lastDevice = id; awaitingState = true; operationStatus = nil
-            testStatus = "SDK 调用已提交，等待同 UID 眼镜状态（最多 8 秒）"
+            testStatus = "SDK 呼び出しを送信済み。同じ UID のグラス状態を待っています（最大8秒）"
             do { try transport(21, packet) }
-            catch { awaitingState = false; lastDevice = nil; testStatus = "发送调用失败；不算成功"; throw error }
+            catch { awaitingState = false; lastDevice = nil; testStatus = "送信呼び出しに失敗しました。成功とは扱いません"; throw error }
             sent = uid
             stateWait?.cancel()
             stateWait = Task { [weak self, timeout] in
                 do { try await Task.sleep(nanoseconds: timeout) } catch { return }
                 guard let self, self.device() == id, self.lastDevice == id, self.lastUID == uid, self.awaitingState else { return }
                 self.awaitingState = false
-                self.testStatus = "等待眼镜状态超时；未确认显示，不自动重发"
+                self.testStatus = "グラス状態の待機がタイムアウトしました。表示は未確認で、自動再送はしません"
             }
         }
         return sent
@@ -272,14 +272,14 @@ struct NotificationPreferences: Codable, Equatable {
             reportedEnabled = value // Report only: no request ID, no source-filter ACK.
         } else if wire.type == 21, let available = DeviceBusinessWire.boolean(json, "available") {
             ancsAvailable = available; availabilityWait?.cancel()
-            availabilityStatus = available ? "眼镜报告 ANCS 可用（不代表每条通知都会显示）" : "眼镜报告 ANCS 不可用；请检查蓝牙共享系统通知"
+            availabilityStatus = available ? "グラスの報告では ANCS は利用可能（すべての通知が表示されるとは限りません）" : "グラスの報告では ANCS は利用不可。Bluetooth のシステム通知共有を確認してください"
         } else if [3, 4].contains(wire.type), id == lastDevice,
                   DeviceBusinessWire.identifier(json, "notificationUID") == lastUID {
             if wire.type == 3, let raw = DeviceBusinessWire.integer(json, "state") {
                 awaitingState = false; stateWait?.cancel()
-                testStatus = "同 UID 眼镜回报：" + GlassesNotificationProtocol.stateLabel(raw)
+                testStatus = "同じ UID のグラス応答：" + GlassesNotificationProtocol.stateLabel(raw)
             } else if wire.type == 4, let raw = DeviceBusinessWire.integer(json, "cmd") {
-                operationStatus = "同 UID 操作 cmd=\(raw)；语义未验，不执行任何工具"
+                operationStatus = "同じ UID の操作 cmd=\(raw)。意味は未検証のため、ツールは実行しません"
             }
         }
         // Type 1 ANCS may contain other apps' private text. Do not persist/log/forward it.
@@ -291,10 +291,10 @@ enum NotificationControlError: LocalizedError {
     case masterNotApplied, disabled, sourceDenied, pending
     var errorDescription: String? {
         switch self {
-        case .masterNotApplied: return "请先向当前眼镜应用通知总开关。"
-        case .disabled: return "通知总开关已关闭；没有发送。"
-        case .sourceDenied: return "Turbo IO来源被关闭；没有发送。"
-        case .pending: return "上一条仍在等待眼镜状态，请稍后再试。"
+        case .masterNotApplied: return "まず現在のグラスへ通知のマスター切替を適用してください。"
+        case .disabled: return "通知のマスター切替がオフです。送信していません。"
+        case .sourceDenied: return "Turbo IO の通知元がオフです。送信していません。"
+        case .pending: return "前回分がまだグラスの状態待ちです。少し待ってからお試しください。"
         }
     }
 }

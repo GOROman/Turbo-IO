@@ -69,14 +69,14 @@ enum DeviceFeatureError: LocalizedError {
     case invalidPacket, disconnected, busy, noSession, incomplete, conflictingBytes, storageLimit, unsupportedFile
     var errorDescription: String? {
         switch self {
-        case .invalidPacket: return "协议字段无效，未发送或应用。"
-        case .disconnected: return "需要唯一已认证的眼镜连接；模拟器不会发包。"
-        case .busy: return "请先结束语音会话或当前眼镜任务。"
-        case .noSession: return "没有匹配的本机任务，未修改其他设备内容。"
-        case .incomplete: return "录音缺少完成消息或存在数据空洞；原始文件已保留，不标完整。"
-        case .conflictingBytes: return "同一录音位置收到不同字节，已停止封装并保留原件。"
-        case .storageLimit: return "超过本机接收限制，已停止新增接收；没有删除眼镜文件。"
-        case .unsupportedFile: return "音频包格式未通过验证；保留原始文件，不生成伪成功音频。"
+        case .invalidPacket: return "プロトコルのフィールドが無効なため、送信も適用もしていません。"
+        case .disconnected: return "認証済みのグラスへの単一接続が必要です。シミュレータはパケットを送信しません。"
+        case .busy: return "先に音声会話または現在のグラスのタスクを終了してください。"
+        case .noSession: return "一致するローカルタスクがありません。他のデバイスの内容は変更していません。"
+        case .incomplete: return "録音の完了メッセージがないか、データに欠落があります。元のファイルは保持し、完全とはマークしません。"
+        case .conflictingBytes: return "同じ録音位置で異なるバイトを受信したため、パッケージ化を停止し、元のファイルを保持しました。"
+        case .storageLimit: return "ローカルの受信上限を超えたため、新規受信を停止しました。グラス側のファイルは削除していません。"
+        case .unsupportedFile: return "音声パッケージの形式が検証を通りませんでした。元のファイルを保持し、見かけだけの音声は生成しません。"
         }
     }
 }

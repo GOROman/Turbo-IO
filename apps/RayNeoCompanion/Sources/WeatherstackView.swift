@@ -15,85 +15,85 @@ struct WeatherstackView: View {
 
     var body: some View {
         Form {
-            Section("认证连接后自动同步") {
-                Text("旧版配置已由和风仪表盘天气接管，不再由连接事件自动触发此服务。此页查询和重试为手动操作。")
+            Section("認証接続後に自動同期") {
+                Text("旧バージョンの設定はQWeatherのダッシュボード天気に引き継がれ、接続イベントでこのサービスが自動的にトリガーされることはなくなりました。このページの検索と再試行は手動操作です。")
                     .font(.caption).foregroundStyle(.secondary)
-                Toggle("连接 / 重连后同步首页天气", isOn: Binding(
+                Toggle("接続 / 再接続後にホーム画面の天気を同期", isOn: Binding(
                     get: { automatic.configuration.enabled },
                     set: { automatic.configure(city: automatic.configuration.city, enabled: $0) }))
                     .accessibilityIdentifier("weather-auto-enabled")
-                Text("已选城市：\(automatic.configuration.city)").font(.caption)
+                Text("選択中の都市：\(automatic.configuration.city)").font(.caption)
                 Text(automatic.status).font(.caption).accessibilityIdentifier("weather-auto-status")
-                Text("只在认证连接后获取并下发；新鲜结果可用于重连。不会改看板布局；录音、对话或提词中会延后。需天气专用 Key 和已核对的图标映射。")
+                Text("認証接続後にのみ取得して送信します。新しい結果は再接続時に使えます。ダッシュボードのレイアウトは変更しません。録音、会話、プロンプターの使用中は延期されます。天気専用キーと確認済みのアイコンマッピングが必要です。")
                     .font(.caption).foregroundStyle(.secondary)
-                Button("重试自动同步") { automatic.retry() }.disabled(automatic.busy)
+                Button("自動同期を再試行") { automatic.retry() }.disabled(automatic.busy)
                     .accessibilityIdentifier("weather-auto-retry")
                 if let result = automatic.snapshot {
-                    Text("自动查询：\(result.city) \(result.lensTemperature)°C · \(result.description) · 天气码 \(result.providerCode)").font(.caption)
+                    Text("自動検索：\(result.city) \(result.lensTemperature)°C · \(result.description) · 天気コード \(result.providerCode)").font(.caption)
                 }
             }
-            Section("Weatherstack · 实时天气") {
-                Text("查询仅发送你填写的城市给 Weatherstack，可能消耗额度。不获取手机定位，不传聊天、录音或眼镜身份。")
+            Section("Weatherstack · リアルタイム天気") {
+                Text("検索では入力した都市のみをWeatherstackへ送信し、クォータを消費する場合があります。スマホの位置情報は取得せず、チャット、録音、グラスの識別情報も送信しません。")
                     .font(.caption).foregroundStyle(.secondary)
-                SecureField(weather.hasKey ? "新 Key（留空保留原 Key）" : "Weatherstack API Key",text:$key)
+                SecureField(weather.hasKey ? "新しいKey（空欄で現在のKeyを保持）" : "Weatherstack API Key",text:$key)
                     .textInputAutocapitalization(.never).autocorrectionDisabled().accessibilityIdentifier("weather-key")
                 HStack {
-                    Button("安全保存 Key") { weather.saveKey(key); key = ""; automatic.retry() }.disabled(key.isEmpty || weather.busy)
+                    Button("Keyを安全に保存") { weather.saveKey(key); key = ""; automatic.retry() }.disabled(key.isEmpty || weather.busy)
                     Spacer()
-                    Button("移除 Key",role:.destructive) { weather.removeKey(); automatic.retry() }.disabled(!weather.hasKey || weather.busy)
+                    Button("Keyを削除",role:.destructive) { weather.removeKey(); automatic.retry() }.disabled(!weather.hasKey || weather.busy)
                 }
-                TextField("城市及国家",text:$city).autocorrectionDisabled().accessibilityIdentifier("weather-city")
-                Button("保存为自动同步城市") {
+                TextField("都市と国",text:$city).autocorrectionDisabled().accessibilityIdentifier("weather-city")
+                Button("自動同期の都市として保存") {
                     automatic.configure(city:city, enabled:automatic.configuration.enabled)
                 }.accessibilityIdentifier("weather-auto-city-save")
-                Button(weather.busy ? "查询中…" : "查询并预览（不发送）") { confirmQuery = true }
+                Button(weather.busy ? "検索中…" : "検索してプレビュー（送信しません）") { confirmQuery = true }
                     .disabled(weather.busy || !weather.hasKey || city.trimmingCharacters(in:.whitespacesAndNewlines).isEmpty)
                     .accessibilityIdentifier("weather-query")
-                Button("查看你提供的 2019 示例") { weather.previewSample() }
+                Button("提供された2019年のサンプルを表示") { weather.previewSample() }
                     .disabled(weather.busy).accessibilityIdentifier("weather-sample")
                 Text(weather.message).font(.caption).accessibilityIdentifier("weather-status")
             }
             if let result = automatic.snapshot, !result.isSample {
-                Section("核对自动天气图标") {
-                    Text("为 Weatherstack 天气码 \(result.providerCode) 保存已验证的固件图标；天气类型变化后，未核对的新代码会暂停下发。")
+                Section("自動天気アイコンの確認") {
+                    Text("Weatherstackの天気コード \(result.providerCode) に対して検証済みのファームウェアアイコンを保存します。天気タイプが変わった場合、未確認の新しいコードは送信を一時停止します。")
                         .font(.caption)
-                    TextField("固件图标编号", text:$rawIcon).keyboardType(.numberPad)
-                    Toggle("已核对该图标映射", isOn:$acknowledgedIcon)
-                    Button("保存图标映射并重试") {
+                    TextField("ファームウェアアイコン番号", text:$rawIcon).keyboardType(.numberPad)
+                    Toggle("このアイコンマッピングを確認済み", isOn:$acknowledgedIcon)
+                    Button("アイコンマッピングを保存して再試行") {
                         guard acknowledgedIcon, let icon = validIcon else { return }
                         automatic.confirmIcon(providerCode:result.providerCode, firmwareCode:icon)
                     }.disabled(!acknowledgedIcon || validIcon == nil || automatic.busy)
                 }
             }
             if let snapshot = weather.snapshot {
-                Section(snapshot.isSample ? "历史示例 · 不可发送" : "查询结果 · 尚未同步") {
+                Section(snapshot.isSample ? "過去のサンプル · 送信不可" : "検索結果 · 未同期") {
                     LabeledContent(snapshot.city,value:String(format:"%g °C",snapshot.celsius))
                         .accessibilityIdentifier("weather-preview")
                     Text(snapshot.description)
-                    Text("当地时间：\(snapshot.sourceLocalTime.isEmpty ? "缺失" : snapshot.sourceLocalTime)").font(.caption)
-                    Text("Weatherstack 代码：\(snapshot.providerCode)（不是眼镜图标编号）").font(.caption)
+                    Text("現地時間：\(snapshot.sourceLocalTime.isEmpty ? "なし" : snapshot.sourceLocalTime)").font(.caption)
+                    Text("Weatherstackコード：\(snapshot.providerCode)（グラスのアイコン番号ではありません）").font(.caption)
                     if snapshot.usedLegacyTemperatureKey {
-                        Text("兼容样本的 temparature 拼写，正式 temperature 字段优先。").font(.caption2)
+                        Text("サンプルの temparature という綴りにも対応しますが、正式な temperature フィールドを優先します。").font(.caption2)
                     }
-                    Text("首页协议只承载地点、整数温度和固件图标；风速、空气质量、月相等字段暂不下发。").font(.caption)
+                    Text("ホーム画面のプロトコルは場所、整数の気温、ファームウェアアイコンのみを扱います。風速、空気質、月齢などのフィールドはまだ送信しません。").font(.caption)
                 }
-                Section("同步首页天气") {
-                    TextField("已验证的固件原始图标编号",text:$rawIcon).keyboardType(.numberPad)
-                    Toggle("我已核对这个固件图标码",isOn:$acknowledgedIcon)
-                    Text("供应商代码没有已验证的自动映射，不用 122 猜眼镜图标。温度四舍五入为整数；不会替换现有看板布局。").font(.caption)
-                    Button("同步查询结果到眼镜") { confirmSend = true }
+                Section("ホーム画面の天気を同期") {
+                    TextField("検証済みのファームウェア元アイコン番号",text:$rawIcon).keyboardType(.numberPad)
+                    Toggle("このファームウェアアイコンコードを確認済み",isOn:$acknowledgedIcon)
+                    Text("プロバイダのコードには検証済みの自動マッピングがないため、122でグラスのアイコンを推測しません。気温は整数に四捨五入します。既存のダッシュボードレイアウトは置き換えません。").font(.caption)
+                    Button("検索結果をグラスへ同期") { confirmSend = true }
                         .disabled(!voice.ready || !snapshot.canSend(at:Date()) || !acknowledgedIcon || validIcon == nil || weather.busy)
                         .accessibilityIdentifier("weather-send")
                     Text(features.status).font(.caption)
                     if let error = features.error { Text(error).font(.caption).foregroundStyle(Palette.amber) }
                 }
             }
-        }.navigationTitle("Weatherstack 天气")
-        .confirmationDialog("将填写的城市发送到 Weatherstack 查询一次？可能消耗套餐额度。",isPresented:$confirmQuery) {
-            Button("查询一次") { lookup = Task { await weather.refresh(city:city) } }
+        }.navigationTitle("Weatherstack天気")
+        .confirmationDialog("入力した都市をWeatherstackへ送信して1回検索しますか？プランのクォータを消費する場合があります。",isPresented:$confirmQuery) {
+            Button("1回検索") { lookup = Task { await weather.refresh(city:city) } }
         }
-        .confirmationDialog("将预览中的温度和指定固件图标发送到眼镜首页？",isPresented:$confirmSend) {
-            Button("确认同步") {
+        .confirmationDialog("プレビューの気温と指定したファームウェアアイコンをグラスのホーム画面へ送信しますか？",isPresented:$confirmSend) {
+            Button("同期を確定") {
                 guard let snapshot = weather.snapshot, acknowledgedIcon, let icon = validIcon else { return }
                 features.sendWeatherstack(snapshot,icon:icon)
             }

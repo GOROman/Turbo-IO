@@ -8,60 +8,60 @@ struct NotificationCenterView: View {
     var body: some View {
         Form {
             Section {
-                Text("通知，让消息抵达眼前").font(.title3.weight(.semibold))
-                Text("系统通知共享与自定义业务通知是两条独立通路；此页不采集其他 App 的通知正文。").font(.caption).foregroundStyle(Palette.muted)
-                Text(voice.ready ? "眼镜已连接" : "未连接眼镜 · 可编辑草稿和预览")
+                Text("通知を、目の前へ届けよう").font(.title3.weight(.semibold))
+                Text("システム通知の共有とカスタム業務通知は別の独立した経路です。このページでは他のAppの通知本文は収集しません。").font(.caption).foregroundStyle(Palette.muted)
+                Text(voice.ready ? "グラス接続済み" : "グラス未接続 · 下書きの編集とプレビューは可能")
                     .accessibilityIdentifier("notification-connection")
             }
-            Section("系统通知共享 · ANCS") {
-                Toggle("允许眼镜通知", isOn: Binding(get: { notifications.preferences.enabled }, set: { notifications.setEnabled($0) }))
+            Section("システム通知の共有 · ANCS") {
+                Toggle("グラスの通知を許可", isOn: Binding(get: { notifications.preferences.enabled }, set: { notifications.setEnabled($0) }))
                     .accessibilityIdentifier("notification-master")
-                Text("在线且空闲时，总开关立即提交；离线只存草稿。不会自动改变 iOS 的通知授权。").font(.caption).foregroundStyle(Palette.muted)
-                Button("向当前眼镜应用总开关") { notifications.applyMaster() }
+                Text("オンラインで待機中なら、メインスイッチはすぐ送信されます。オフラインでは下書きとして保存するだけです。iOSの通知許可が自動で変わることはありません。").font(.caption).foregroundStyle(Palette.muted)
+                Button("現在のグラスにメインスイッチを適用") { notifications.applyMaster() }
                     .disabled(!notifications.canSend).accessibilityIdentifier("notification-apply-master")
                 NavigationLink { NotificationSourcesView() } label: {
-                    LabeledContent("允许哪些 App", value: "\(notifications.preferences.sources.filter(\.allowed).count)/\(notifications.preferences.sources.count)")
+                    LabeledContent("許可するApp", value: "\(notifications.preferences.sources.filter(\.allowed).count)/\(notifications.preferences.sources.count)")
                 }.accessibilityIdentifier("notification-sources-open")
-                Picker("通知停留时间", selection: Binding(get: { notifications.preferences.displayTime }, set: { notifications.setDisplayTime($0) })) {
+                Picker("通知の表示時間", selection: Binding(get: { notifications.preferences.displayTime }, set: { notifications.setDisplayTime($0) })) {
                     ForEach([5,10,15,20,30], id: \.self) { seconds in Text("\(seconds) 秒").tag(seconds) }
                 }.accessibilityIdentifier("notification-display-time")
-                Button("设为 15 秒草稿") { notifications.setDisplayTime(15) }
+                Button("15秒の下書きにする") { notifications.setDisplayTime(15) }
                     .accessibilityIdentifier("notification-duration-15")
-                Text("新时长需镜片计时验收。协议把时长与来源过滤放在同一包，改草稿不会自动下发；应用前请核对来源。")
+                Text("新しい表示時間はレンズ側での計時確認が必要です。プロトコルでは表示時間と送信元フィルタが同じパケットに入るため、下書きを変えても自動送信はされません。適用前に送信元を確認してください。")
                     .font(.caption).foregroundStyle(Palette.muted)
-                Text(notifications.sourcesNeedApply ? "来源列表：草稿待应用" : "来源列表：已提交，效果待验")
+                Text(notifications.sourcesNeedApply ? "送信元リスト：下書き未適用" : "送信元リスト：送信済み、効果は未確認")
                     .font(.caption).accessibilityIdentifier("notification-sources-state")
-                Button("应用来源配置到眼镜") { confirmSources = true }
+                Button("送信元設定をグラスに適用") { confirmSources = true }
                     .disabled(!notifications.canSend).accessibilityIdentifier("notification-apply-sources")
                 Text(notifications.configurationStatus).font(.caption).accessibilityIdentifier("notification-settings-status")
                 if let enabled = notifications.reportedEnabled {
-                    Text("眼镜报告总开关：\(enabled ? "开" : "关")（不是来源逐项回执）").font(.caption)
+                    Text("グラスの報告するメインスイッチ：\(enabled ? "オン" : "オフ")（送信元ごとの受信確認ではありません）").font(.caption)
                 }
             }
-            Section("手动测试 · 不接服务器") {
+            Section("手動テスト · サーバー不使用") {
                 NavigationLink { NotificationTestView() } label: {
-                    Label("编写并发送测试通知", systemImage: "paperplane")
+                    Label("テスト通知を作成して送信", systemImage: "paperplane")
                 }.accessibilityIdentifier("notification-test-open")
-                Text("直接走眼镜业务通道，不弹手机通知。支持填写标题、正文，查看 UID、状态和超时。").font(.caption).foregroundStyle(Palette.muted)
+                Text("グラスの業務チャンネルを直接使うため、スマホには通知は出ません。タイトルと本文を入力し、UID、状態、タイムアウトを確認できます。").font(.caption).foregroundStyle(Palette.muted)
             }
-            Section("共享通知检查") {
+            Section("共有通知のチェック") {
                 Text(notifications.availabilityStatus).accessibilityIdentifier("notification-ancs-status")
-                Button("查询眼镜 ANCS 状态") { notifications.queryAvailability() }
+                Button("グラスの ANCS 状態を照会") { notifications.queryAvailability() }
                     .disabled(!notifications.canSend).accessibilityIdentifier("notification-query")
-                Text("请在 iPhone 设置 → 蓝牙 → 眼镜详情中允许共享系统通知。来源 App 也需要系统通知权限；专注模式、预览设置等可能影响实际显示。Turbo IO不会替你更改这些设置。").font(.caption).foregroundStyle(Palette.muted)
+                Text("iPhoneの設定 → Bluetooth → グラスの詳細で、システム通知の共有を許可してください。送信元のAppにもシステム通知の権限が必要です。集中モードやプレビュー設定などが実際の表示に影響する場合があります。Turbo IOがこれらの設定を勝手に変更することはありません。").font(.caption).foregroundStyle(Palette.muted)
             }
             if let error = notifications.error { Section { Text(error).foregroundStyle(.red).accessibilityIdentifier("notification-error") } }
         }
-        .navigationTitle("通知中心").navigationBarTitleDisplayMode(.inline)
+        .navigationTitle("通知センター").navigationBarTitleDisplayMode(.inline)
         .toolbar(.visible, for: .navigationBar)
         .preference(key: CompanionTabBarHiddenPreference.self, value: true)
         .onAppear { features.prepare(); notifications.connectionChanged() }
         .onChange(of: voice.deviceID) { _ in notifications.connectionChanged() }
-        .confirmationDialog("替换当前眼镜的通知来源配置？", isPresented: $confirmSources, titleVisibility: .visible) {
-            Button("确认应用当前配置") { notifications.applySources() }
-            Button("取消", role: .cancel) {}
+        .confirmationDialog("現在のグラスの通知送信元設定を置き換えますか？", isPresented: $confirmSources, titleVisibility: .visible) {
+            Button("現在の設定を適用する") { notifications.applySources() }
+            Button("キャンセル", role: .cancel) {}
         } message: {
-            Text("将应用总开关、列表中各 App（含电话）的开关和停留时间草稿：displayTime=\(notifications.preferences.displayTime)、avoidDuplicate=false、intervalTime=2。不是从眼镜读回的原配置；未列出的 App 不保证被拦截。")
+            Text("メインスイッチ、リスト内の各App（電話を含む）のスイッチ、表示時間の下書きを適用します：displayTime=\(notifications.preferences.displayTime)、avoidDuplicate=false、intervalTime=2。グラスから読み戻した元の設定ではありません。リストにないAppがブロックされる保証はありません。")
         }
     }
 }
@@ -76,14 +76,14 @@ struct NotificationSourcesView: View {
     var body: some View {
         List {
             Section {
-                Text("这些是可配置的来源，不是手机已安装 App 清单。协议发送关闭项的 Bundle ID；未知 App 不会自动被拒绝。首次应用会替换原来源过滤配置。")
+                Text("これらは設定可能な送信元で、スマホにインストール済みのApp一覧ではありません。プロトコルはオフにした項目の Bundle ID を送信します。未知のAppが自動で拒否されることはありません。初回適用で元の送信元フィルタ設定は置き換わります。")
                     .font(.caption).accessibilityIdentifier("notification-source-boundary")
-                TextField("搜索名称或 Bundle ID", text: $search)
+                TextField("名前または Bundle ID で検索", text: $search)
                     .autocorrectionDisabled().textInputAutocapitalization(.never)
                     .accessibilityIdentifier("notification-source-search")
-                Button("添加来源 App") { adding = true }.accessibilityIdentifier("notification-source-add")
+                Button("送信元Appを追加") { adding = true }.accessibilityIdentifier("notification-source-add")
             }
-            Section("打开为允许 · 修改后返回应用") {
+            Section("オンで許可 · 変更後は戻って適用") {
                 ForEach(visible) { source in
                     Toggle(isOn: Binding(get: { notifications.preferences.sources.first(where: { $0.id == source.id })?.allowed ?? false },
                                          set: { notifications.setAllowed(source.id, $0) })) {
@@ -94,9 +94,9 @@ struct NotificationSourcesView: View {
                     }.accessibilityIdentifier("notification-source-\(source.id)")
                 }
             }
-            Section { Text("填错 Bundle ID 将无法过滤对应来源。当前不读取第三方 App 数据，也不自动上传通知。要恢复一个关闭项，请重新打开并应用配置。").font(.caption) }
+            Section { Text("Bundle ID を間違えると、その送信元をフィルタできません。サードパーティAppのデータは読み取らず、通知を自動アップロードすることもありません。オフにした項目を戻すには、再びオンにして設定を適用してください。").font(.caption) }
         }
-        .navigationTitle("允许哪些 App").navigationBarTitleDisplayMode(.inline)
+        .navigationTitle("許可するApp").navigationBarTitleDisplayMode(.inline)
         .toolbar(.visible, for: .navigationBar)
         .preference(key: CompanionTabBarHiddenPreference.self, value: true)
         .sheet(isPresented: $adding) { NotificationSourceEditor() }
@@ -111,15 +111,15 @@ private struct NotificationSourceEditor: View {
     var body: some View {
         NavigationStack {
             Form {
-                TextField("App 名称", text: $name).accessibilityIdentifier("notification-source-name")
-                TextField("Bundle ID，例如 com.example.app", text: $id)
+                TextField("App名", text: $name).accessibilityIdentifier("notification-source-name")
+                TextField("Bundle ID（例：com.example.app）", text: $id)
                     .textInputAutocapitalization(.never).autocorrectionDisabled().accessibilityIdentifier("notification-source-id")
-                Text("请填写真实 Bundle ID；显示名称无法替代标识。新增项默认允许，保存后仍需返回应用配置。").font(.caption)
+                Text("実際の Bundle ID を入力してください。表示名では識別子を代用できません。追加した項目は既定で許可され、保存後も戻って設定を適用する必要があります。").font(.caption)
                 if let error = notifications.error { Text(error).foregroundStyle(.red) }
-            }.navigationTitle("添加通知来源").toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("取消") { dismiss() } }
+            }.navigationTitle("通知の送信元を追加").toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("キャンセル") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("保存来源") { if notifications.addSource(name: name, id: id) { dismiss() } }
+                    Button("送信元を保存") { if notifications.addSource(name: name, id: id) { dismiss() } }
                         .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !GlassesNotificationProtocol.validAppID(id))
                         .accessibilityIdentifier("notification-source-save")
                 }
@@ -131,26 +131,26 @@ private struct NotificationSourceEditor: View {
 struct NotificationTestView: View {
     @EnvironmentObject private var notifications: CompanionNotifications
     @EnvironmentObject private var voice: CompanionVoiceRuntime
-    @State private var title = "Turbo IO通知测试"
-    @State private var content = "这是独立 App 的业务通知测试。"
+    @State private var title = "Turbo IO通知テスト"
+    @State private var content = "これは独立Appの業務通知テストです。"
     @FocusState private var focused: Bool
     private var valid: Bool { (try? GlassesNotificationProtocol.notification(uid: "1", title: title, content: content)) != nil }
     var body: some View {
         Form {
-            Section("编辑测试内容") {
-                Text("来源固定为Turbo IO，不冒充其他 App；内容只在本次页面内存中，不保存或上传服务器。").font(.caption).foregroundStyle(Palette.muted)
-                TextField("标题（最多 80 字）", text: $title, axis: .vertical)
+            Section("テスト内容を編集") {
+                Text("送信元はTurbo IO固定で、他のAppを装うことはありません。内容はこのページのメモリ内だけにあり、保存もサーバーへのアップロードもされません。").font(.caption).foregroundStyle(Palette.muted)
+                TextField("タイトル（最大80文字）", text: $title, axis: .vertical)
                     .focused($focused).accessibilityIdentifier("notification-test-title")
-                TextField("正文（最多 500 字）", text: $content, axis: .vertical).lineLimit(3...8)
+                TextField("本文（最大500文字）", text: $content, axis: .vertical).lineLimit(3...8)
                     .focused($focused).accessibilityIdentifier("notification-test-content")
-                Text("标题 \(title.count)/80 · 正文 \(content.count)/500 · 这是本版测试上限，不是镜片排版保证").font(.caption2)
-                Button("填入随机校验测试数据") {
+                Text("タイトル \(title.count)/80 · 本文 \(content.count)/500 · これはこの版のテスト上限で、レンズ側のレイアウトを保証するものではありません").font(.caption2)
+                Button("ランダムな検証用テストデータを入力") {
                     let code = String(UUID().uuidString.prefix(6))
-                    title = "Turbo IO通知测试 \(code)"; content = "第一行：独立业务通知\n第二行：校验码 \(code)\n请核对眼镜文字。"
+                    title = "Turbo IO通知テスト \(code)"; content = "1行目：独立業務通知\n2行目：検証コード \(code)\nグラスの文字を確認してください。"
                     focused = false
                 }.accessibilityIdentifier("notification-test-sample")
             }
-            Section("手机预览 · 不是镜片截图") {
+            Section("スマホのプレビュー · レンズのスクリーンショットではありません") {
                 VStack(alignment: .leading, spacing: 8) {
                     Label("Turbo IO", systemImage: "bell.badge").font(.caption).foregroundStyle(Palette.green)
                     Text(title).font(.headline)
@@ -158,20 +158,20 @@ struct NotificationTestView: View {
                 }.padding(.vertical, 8).accessibilityIdentifier("notification-test-preview")
             }
             Section {
-                Button("发送到眼镜") {
+                Button("グラスへ送信") {
                     focused = false; _ = notifications.send(title: title, content: content)
                 }.disabled(!notifications.canTest || !valid).accessibilityIdentifier("notification-test-send")
-                Text("需要已认证连接、允许眼镜通知、Turbo IO来源开启，且先应用总开关；语音、录音或提词进行时不抢占。按钮只发一次，不自动重试。").font(.caption).foregroundStyle(Palette.muted)
-                if let uid = notifications.lastUID { Text("最近一次 UID：\(uid)").font(.caption.monospaced()).accessibilityIdentifier("notification-test-uid") }
+                Text("認証済みの接続、グラス通知の許可、Turbo IO送信元のオン、メインスイッチの適用が先に必要です。音声、録音、プロンプターの使用中は割り込みません。ボタンは1回だけ送信し、自動再試行はしません。").font(.caption).foregroundStyle(Palette.muted)
+                if let uid = notifications.lastUID { Text("直近の UID：\(uid)").font(.caption.monospaced()).accessibilityIdentifier("notification-test-uid") }
                 Text(notifications.testStatus).accessibilityIdentifier("notification-test-status")
                 if let operation = notifications.operationStatus { Text(operation).font(.caption) }
                 if let error = notifications.error { Text(error).foregroundStyle(.red).accessibilityIdentifier("notification-test-error") }
-                Text("SDK 调用返回、眼镜状态回报、实际镜片显示是不同判据。即使收到回报，也请核对上方校验码；原有语音文字显示不算这项通过。").font(.caption)
+                Text("SDK呼び出しの戻り、グラスの状態返信、実際のレンズ表示は別の判定基準です。返信を受け取っても、上の検証コードを確認してください。従来の音声文字表示はこの項目の合格にはなりません。").font(.caption)
             }
         }
-        .navigationTitle("自定义通知测试").navigationBarTitleDisplayMode(.inline)
+        .navigationTitle("カスタム通知テスト").navigationBarTitleDisplayMode(.inline)
         .toolbar(.visible, for: .navigationBar)
-        .toolbar { ToolbarItemGroup(placement: .keyboard) { Spacer(); Button("完成编辑") { focused = false } } }
+        .toolbar { ToolbarItemGroup(placement: .keyboard) { Spacer(); Button("編集を完了") { focused = false } } }
         .preference(key: CompanionTabBarHiddenPreference.self, value: true)
         .onChange(of: voice.deviceID) { _ in notifications.connectionChanged() }
     }

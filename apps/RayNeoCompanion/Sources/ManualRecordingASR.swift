@@ -7,11 +7,11 @@ enum RecordingASRError: LocalizedError {
     case unsupported, limit, credentials, remote, empty
     var errorDescription: String? {
         switch self {
-        case .unsupported: return "此音频无法由 iOS 解码。请使用有效 WAV、M4A、MP3 等系统支持格式；原始眼镜容器可能需要额外转换。"
-        case .limit: return "手动转写暂限 10 分钟音频 / 32 MiB 解码 PCM。"
-        case .credentials: return "请先在真机语音页保存阿里云 ASR 密钥。模拟器不调用真实语音服务。"
-        case .remote: return "ASR 连接、超时或协议失败，没有保存为成功转写；可重试。"
-        case .empty: return "ASR 未返回有效最终文字，没有生成空笔记。"
+        case .unsupported: return "この音声は iOS でデコードできません。有効な WAV・M4A・MP3 などシステム対応形式を使ってください。グラスの元のコンテナは追加変換が必要な場合があります。"
+        case .limit: return "手動文字起こしは当面、音声10分 / デコード PCM 32 MiB までです。"
+        case .credentials: return "まず実機の音声ページで Alibaba Cloud ASR のキーを保存してください。シミュレータは実際の音声サービスを呼びません。"
+        case .remote: return "ASR の接続・タイムアウト・プロトコルのいずれかが失敗しました。成功した文字起こしとしては保存していません。再試行できます。"
+        case .empty: return "ASR から有効な最終テキストが返らなかったため、空のノートは作っていません。"
         }
     }
 }
@@ -215,7 +215,7 @@ final class FileASRDiagnostic {
     @Published private(set) var resultText = ""
     @Published private var work: Task<Void, Never>?
     var busy: Bool { work != nil }
-    func cancel() { work?.cancel(); status = "正在取消，原音频保留…" }
+    func cancel() { work?.cancel(); status = "キャンセル中です。元の音声は保持します…" }
     func start(id: UUID, title: String, archive: LocalArchiveController, captureDiagnostic: Bool = false, rightChannelOnly: Bool = false) {
         guard work == nil else { return }
         recordingID = id; progress = 0; resultText = ""
@@ -226,10 +226,10 @@ final class FileASRDiagnostic {
             defer { work = nil }
             var diagnostic: FileASRDiagnostic?
             do {
-                status = "校验本机音频…"
+                status = "本機の音声を検証中…"
                 guard let url = await archive.verify(id) else { throw RecordingASRError.unsupported }
                 try Task.checkCancellation()
-                status = "本机解码为 16 kHz 单声道…"
+                status = "本機で 16 kHz モノラルへデコード中…"
                 let decoder = Task.detached(priority: .userInitiated) { try RecordingPCMDecoder.decode(url, inputChannel: rightChannelOnly ? 1 : nil) }
                 let pcm = try await withTaskCancellationHandler { try await decoder.value } onCancel: { decoder.cancel() }
                 try Task.checkCancellation()
@@ -238,19 +238,19 @@ final class FileASRDiagnostic {
                     diagnostic = try FileASRDiagnostic(root: root.appendingPathComponent("ManualASRDiagnosticsV1"), pcm: pcm, secret: key)
                     try diagnostic?.record("source", "recording=\(id.uuidString) decodedBytes=\(pcm.count) channel=\(rightChannelOnly ? "right-only" : "equal-weight-downmix")")
                 }
-                status = "手动转写中，音频正在发往阿里云…"
+                status = "手動文字起こし中。音声を Alibaba Cloud へ送信しています…"
                 let text = try await FileASRClient.transcribe(pcm: pcm, key: key, host: host, diagnostic: diagnostic) { value in self.progress = value }
                 try Task.checkCancellation()
                 resultText = text
-                status = "保存新文字修订…"
+                status = "新しいテキストリビジョンを保存中…"
                 guard await archive.saveTranscript(recordingID: id, text: text, title: String(("ASR · " + title).prefix(64))) != nil else {
-                    status = "识别已完成但笔记未保存，可复制下方文字；原音频保留。"; return
+                    status = "認識は完了しましたがノートは保存されませんでした。下のテキストをコピーできます。元の音声は保持します。"; return
                 }
-                status = "转写完成，已保存为新 Markdown 修订；请核对识别内容。"
-            } catch is CancellationError { status = "已取消后续处理；原音频和已提交修订保留。" }
+                status = "文字起こし完了。新しい Markdown リビジョンとして保存しました。認識内容を確認してください。"
+            } catch is CancellationError { status = "後続処理をキャンセルしました。元の音声と送信済みリビジョンは保持します。" }
             catch {
                 try? diagnostic?.record("client-error", "domain=\((error as NSError).domain) code=\((error as NSError).code) description=\(error.localizedDescription)")
-                status = (error as? RecordingASRError)?.localizedDescription ?? "转写未完成，可能断网或已取消；原音频保留。"
+                status = (error as? RecordingASRError)?.localizedDescription ?? "文字起こしが完了しませんでした。ネットワーク切断またはキャンセルの可能性があります。元の音声は保持します。"
             }
         }
         #else
@@ -268,24 +268,24 @@ struct ManualRecordingASRView: View {
     @State private var rightChannelOnly = false
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("录音转文字").font(.headline)
-            Text("只有确认后才把这份本机音频发送给阿里云 ASR。按音频时长流式发送，可能计费；无需 DeepSeek，不自动总结。成功后新增文字修订，不覆盖原音频或旧稿。")
+            Text("録音を文字起こし").font(.headline)
+            Text("確認した場合にのみ、この本機音声を Alibaba Cloud ASR へ送信します。音声の長さに応じてストリーミング送信し、課金される場合があります。DeepSeek は不要で、自動要約もしません。成功するとテキストリビジョンを新規追加し、元の音声や旧稿は上書きしません。")
                 .font(.caption).foregroundStyle(Palette.muted)
-            Text("转写期间请保持 App 在前台；长时间后台完成尚未验收。").font(.caption2).foregroundStyle(Palette.muted)
-            Text("默认合并全部声道，再转为16kHz单声道；保留原始录音，不覆盖音频。").font(.caption2).foregroundStyle(Palette.muted)
-            Toggle("仅下次保存 ASR 诊断", isOn: $captureDiagnostic).disabled(asr.busy).accessibilityIdentifier("manual-asr-diagnostic")
-            if captureDiagnostic { Text("将额外保存本次发送音频和服务端响应（可能含转录正文），仅存本机；不记录请求头或密钥。").font(.caption2) }
+            Text("文字起こし中は App をフォアグラウンドに保ってください。長時間のバックグラウンド完了は未検証です。").font(.caption2).foregroundStyle(Palette.muted)
+            Text("デフォルトでは全チャンネルをミックスして16kHzモノラルへ変換します。元の録音は保持し、音声は上書きしません。").font(.caption2).foregroundStyle(Palette.muted)
+            Toggle("次回のみ ASR 診断を保存", isOn: $captureDiagnostic).disabled(asr.busy).accessibilityIdentifier("manual-asr-diagnostic")
+            if captureDiagnostic { Text("今回送信する音声とサーバー応答（文字起こし本文を含む場合があります）を追加で保存します。保存先は本機のみ。リクエストヘッダーやキーは記録しません。").font(.caption2) }
             if captureDiagnostic {
-                Toggle("诊断：仅本次使用右声道", isOn: $rightChannelOnly).disabled(asr.busy).accessibilityIdentifier("manual-asr-right-channel")
+                Toggle("診断：今回のみ右チャンネルを使用", isOn: $rightChannelOnly).disabled(asr.busy).accessibilityIdentifier("manual-asr-right-channel")
             }
-            Button("手动开始 ASR 转写") { confirmation = true }.disabled(asr.busy || archive.isBusy).accessibilityIdentifier("manual-recording-asr")
+            Button("ASR 文字起こしを手動で開始") { confirmation = true }.disabled(asr.busy || archive.isBusy).accessibilityIdentifier("manual-recording-asr")
             if asr.recordingID == id {
                 Text(asr.status).font(.caption)
-                if asr.busy { ProgressView(value: asr.progress); Button("取消转写") { asr.cancel() } }
+                if asr.busy { ProgressView(value: asr.progress); Button("文字起こしをキャンセル") { asr.cancel() } }
                 if !asr.resultText.isEmpty { Text(asr.resultText).font(.caption).textSelection(.enabled).privacySensitive() }
-            } else if asr.busy { Text("另一份录音正在转写。完成后再试。").font(.caption) }
-        }.confirmationDialog("将这份录音发送到阿里云 ASR？可能计费，识别结果需要人工核对。", isPresented: $confirmation) {
-            Button("确认上传并转文字") {
+            } else if asr.busy { Text("別の録音を文字起こし中です。完了してからお試しください。").font(.caption) }
+        }.confirmationDialog("この録音を Alibaba Cloud ASR へ送信しますか？課金される場合があり、認識結果は目視確認が必要です。", isPresented: $confirmation) {
+            Button("アップロードして文字起こしを確定") {
                 let capture = captureDiagnostic, right = captureDiagnostic && rightChannelOnly
                 captureDiagnostic = false; rightChannelOnly = false
                 asr.start(id: id, title: title, archive: archive, captureDiagnostic: capture, rightChannelOnly: right)

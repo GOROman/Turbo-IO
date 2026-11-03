@@ -16,9 +16,9 @@ enum PortableCopyError: LocalizedError {
     case unsafe, capacity, changed
     var errorDescription: String? {
         switch self {
-        case .unsafe: return "导出副本目录结构异常，未移动任何文件。"
-        case .capacity: return "目标目录已达到 20 份限制；未覆盖或删除现有副本。"
-        case .changed: return "副本已变化或目标已存在，请刷新后重试。"
+        case .unsafe: return "エクスポートコピーのフォルダ構造に異常があるため、ファイルは移動していません。"
+        case .capacity: return "移動先フォルダが上限の 20 件に達しています。既存のコピーの上書きや削除はしていません。"
+        case .changed: return "コピーが変更されたか、移動先がすでに存在します。更新してから再試行してください。"
         }
     }
 }

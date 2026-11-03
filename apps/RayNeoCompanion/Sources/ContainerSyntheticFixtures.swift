@@ -7,9 +7,9 @@ enum ContainerSyntheticFixture: String, CaseIterable, Identifiable {
     var id: String { rawValue }
     var title: String {
         switch self {
-        case .supported: return "合成 Ogg · 结构子集"
-        case .badCRC: return "合成 Ogg · CRC 损坏"
-        case .unsupportedVersion: return "合成 Ogg · 未支持版本"
+        case .supported: return "合成 Ogg · 構造サブセット"
+        case .badCRC: return "合成 Ogg · CRC 破損"
+        case .unsupportedVersion: return "合成 Ogg · 未対応バージョン"
         }
     }
     func bytes() -> Data {

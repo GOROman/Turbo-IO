@@ -31,11 +31,11 @@ struct Screen<Content: View>: View {
                         Spacer()
                         if let headerIcon {
                             Button { headerAction?() } label: { Image(systemName: headerIcon).font(.system(size: 23)).foregroundStyle(Palette.ink).frame(width: 42, height: 42) }
-                                .accessibilityLabel(headerIcon == "gearshape" ? "偏好设置" : "归档链路")
+                                .accessibilityLabel(headerIcon == "gearshape" ? "環境設定" : "アーカイブ連携")
                         }
                     }
                     if store.demoMode {
-                        Label("演示模式 · 示例数据，不连接眼镜", systemImage: "sparkles")
+                        Label("デモモード · サンプルデータ、グラスには接続しません", systemImage: "sparkles")
                             .font(.caption.weight(.medium)).foregroundStyle(Palette.amber)
                             .padding(12).frame(maxWidth: .infinity, alignment: .leading)
                             .background(Color(red: 0.98, green: 0.92, blue: 0.77), in: RoundedRectangle(cornerRadius: 12))
@@ -106,7 +106,7 @@ struct FeatureRow: View {
     let icon: String
     let title: String
     let subtitle: String
-    var status: String = "待接入"
+    var status: String = "接続待ち"
     var active = false
     var body: some View {
         HStack(spacing: 14) {

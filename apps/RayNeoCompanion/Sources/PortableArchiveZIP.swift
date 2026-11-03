@@ -8,9 +8,9 @@ enum PortableArchiveError: LocalizedError {
     case invalidSnapshot, changed, capacity
     var errorDescription: String? {
         switch self {
-        case .invalidSnapshot: return "导出快照结构不符合要求；没有发布 ZIP。"
-        case .changed: return "快照或 ZIP 的内容复核失败；原归档保留，没有发布分享文件。"
-        case .capacity: return "本机导出目录已达到 20 次导出限制，请在 ZIP 导出副本页面整理；不会自动删除旧包。"
+        case .invalidSnapshot: return "エクスポート用スナップショットの構造が要件を満たさないため、ZIP は公開していません。"
+        case .changed: return "スナップショットまたは ZIP の内容再確認に失敗しました。元のアーカイブは保持し、共有ファイルは公開していません。"
+        case .capacity: return "ローカルのエクスポートフォルダが上限の 20 回に達しています。ZIP エクスポートコピーのページで整理してください。古いパッケージは自動削除しません。"
         }
     }
 }
@@ -72,14 +72,14 @@ enum PortableArchiveZIP {
         }
     }
     private static let readme = Data("""
-        # Turbo IO便携归档
+        # Turbo IO ポータブルアーカイブ
 
-        解压后，将整个 RayNeo 文件夹复制到 Obsidian 仓库，保持 notes/ 与 audio/ 同级。
-        Markdown 内的 ../audio/ 链接需要对应音频；不要只复制笔记。
-        snapshot-manifest.json 列出选中条目的长度和 SHA-256，可在 NAS 独立复核。
-        本包只包含明确选择的录音和修订，没有其他会话、密钥、设备绑定或实时录音缓存。
-        打包校验不等于音频可解码、无线无丢失、文字准确、服务器已收到或 Obsidian 已索引。
-        本操作没有联网、自动识别或删除来源。请在目标设备确认文件后再自行整理副本。
+        解凍後、RayNeo フォルダ全体を Obsidian ボルトにコピーし、notes/ と audio/ を同じ階層に保ってください。
+        Markdown 内の ../audio/ リンクには対応する音声が必要です。ノートだけをコピーしないでください。
+        snapshot-manifest.json には選択した項目の長さと SHA-256 が記載されており、NAS で独立に再確認できます。
+        このパッケージには明示的に選択した録音と修正のみが含まれます。他の会話、キー、デバイスのバインド、リアルタイム録音キャッシュは含まれません。
+        パッケージの検証は、音声がデコード可能、無線でロスがない、文字が正確、サーバーが受信済み、Obsidian が索引済み、を意味しません。
+        この操作では通信、自動認識、元の削除は行いません。コピー先デバイスでファイルを確認してから、コピーをご自身で整理してください。
         """.utf8)
     static func verify(_ url: URL, folder: String, expected: [Expected]) throws {
         let zip = try ZIPFoundation.Archive(url:url,accessMode:.read)
