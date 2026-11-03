@@ -1,0 +1,127 @@
+[
+  {
+    "Name": "nuttx_audio.bin",
+    "Size": 1461920,
+    "Md5": "48875f980a99b02cc4604e7713f43a52",
+    "BurnMode": 1,
+    "BurnAddr": "0",
+    "BurnPath": ""
+  }
+,
+  {
+    "Name": "cb_fw_venus.bin",
+    "Size": 114592,
+    "Md5": "5055bfbe6f47f730714b8e308baf7dfc",
+    "BurnMode": 3,
+    "BurnAddr": "M",
+    "BurnPath": "cb_fw_venus.bin"
+  }
+,
+  {
+    "Name": "nuttx_ap.bin",
+    "Size": 9466560,
+    "Md5": "9156b9419c3557e9bd72dc61692d0b4b",
+    "BurnMode": 1,
+    "BurnAddr": "0",
+    "BurnPath": ""
+  }
+,
+  {
+    "Name": "ota_installer_progress.bin",
+    "Size": 5616,
+    "Md5": "979b84179d9a1b3f41144f35c985c07d",
+    "BurnMode": 3,
+    "BurnAddr": "M",
+    "BurnPath": "ota/ota_installer_progress.bin"
+  }
+,
+  {
+    "Name": "images.bin",
+    "Size": 324283,
+    "Md5": "4aed54b04cb9b5d2138bd68082060e8f",
+    "BurnMode": 3,
+    "BurnAddr": "M",
+    "BurnPath": "images.bin"
+  }
+,
+  {
+    "Name": "lotties.bin",
+    "Size": 651481,
+    "Md5": "f0d85745ee57dfd31e31a338bd83e5ce",
+    "BurnMode": 3,
+    "BurnAddr": "M",
+    "BurnPath": "lotties.bin"
+  }
+,
+  {
+    "Name": "rives.bin",
+    "Size": 689431,
+    "Md5": "21312b3c7d277894f3339ff474b18ad3",
+    "BurnMode": 3,
+    "BurnAddr": "M",
+    "BurnPath": "rives.bin"
+  }
+,
+  {
+    "Name": "nuttx_bth.bin",
+    "Size": 1160160,
+    "Md5": "489c4b5ec6ca1d56d3888aaf0ead2182",
+    "BurnMode": 1,
+    "BurnAddr": "0",
+    "BurnPath": ""
+  }
+,
+  {
+    "Name": "fac_test_img.bin",
+    "Size": 1821552,
+    "Md5": "53527de6e8b77153955adfa7d88348c1",
+    "BurnMode": 3,
+    "BurnAddr": "M",
+    "BurnPath": "fac_test_img.bin"
+  }
+,
+  {
+    "Name": "nuttx_apc1.bin",
+    "Size": 1420248,
+    "Md5": "38873f2d0faf496f19d1967a7a1efb41",
+    "BurnMode": 1,
+    "BurnAddr": "0",
+    "BurnPath": ""
+  }
+,
+  {
+    "Name": "smf.json",
+    "Size": 23510,
+    "Md5": "034143a8ce874eb018217be74d2be63a",
+    "BurnMode": 2,
+    "BurnAddr": "0x30FD0000,0x282FB000",
+    "BurnPath": ""
+  }
+,
+  {
+    "Name": "pil_algo_vad_demo.dll",
+    "Size": 433432,
+    "Md5": "42f8be3a5c68057fb48ea05e4a44893a",
+    "BurnMode": 2,
+    "BurnAddr": "0x2830B000",
+    "BurnPath": ""
+  }
+,
+  {
+    "Name": "pil_algo_wakeup_dll_nand.dll",
+    "Size": 287560,
+    "Md5": "2604a139127eee21e742e1360cbcde98",
+    "BurnMode": 3,
+    "BurnAddr": "M",
+    "BurnPath": "pil_algo_wakeup_dll_nand.dll"
+  }
+,
+  {
+    "Name": "pil_algo_up_demo_nand.dll",
+    "Size": 504388,
+    "Md5": "3d3871b75e21e5004a7cd9c02b31097a",
+    "BurnMode": 3,
+    "BurnAddr": "M",
+    "BurnPath": "pil_algo_up_demo_nand.dll"
+  }
+]
