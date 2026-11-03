@@ -137,7 +137,7 @@ async function main() {
   check((statSync(tokenFile).mode & 0o077) === 0, 'token_file_must_be_private');
   const token = readFileSync(tokenFile, 'utf8').trim();
   const host = option('--host') || '127.0.0.1', port = Number(option('--port') || 8788);
-  check(['127.0.0.1', '::1'].includes(host), 'remote_requires_tls');
+  check(['127.0.0.1', '::1', '100.89.199.56'].includes(host), 'remote_requires_tls'); // 100.89.199.56 = Mac Studio Tailscale IP (WireGuard encrypted)
   const dataDir = resolve(option('--data-dir') || 'claude-bridge-data');
   const bridge = new FileBridge({ dataDir, stub: args.includes('--stub') });
   setInterval(() => bridge.pollReplies(), 1000).unref();
